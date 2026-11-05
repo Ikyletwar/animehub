@@ -21,8 +21,7 @@ import manga as M
 import yomu as Y
 import shiro as H
 
-WEB_DIR = os.path.join(os.path.dirname(__file__), "..", "web")
-app = Flask(__name__, static_folder=WEB_DIR, static_url_path="")
+app = Flask(__name__, static_folder="web", static_url_path="")
 RELAY_TOKEN = "otakudesu"
 
 
@@ -80,6 +79,12 @@ threading.Thread(target=_warmer, daemon=True).start()
 # ---------------------------------------------------------------------------
 @app.get("/")
 def index():
+    return Response(status=302, headers={"Location": "/baru"})
+
+
+@app.get("/legacy")
+@app.get("/legacy/")
+def legacy():
     r = send_from_directory(app.static_folder, "index.html")
     r.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     r.headers["Pragma"] = "no-cache"
@@ -427,7 +432,7 @@ def health():
 # ---------------------------------------------------------------------------
 # UI alternatif "MIRU" (webbaru.html) — disajikan dari direktori kerjanya
 # ---------------------------------------------------------------------------
-MIRU_DIR = os.environ.get("ANIMEHUB_FRONTEND_DIR", os.path.join(os.path.dirname(__file__), "..", "frontend"))
+MIRU_DIR = "/home/nihongo/animehub"
 
 
 @app.get("/baru")
