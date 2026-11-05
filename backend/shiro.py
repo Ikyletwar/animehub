@@ -17,6 +17,7 @@ from __future__ import annotations
 import re
 import time
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import httpx
@@ -110,6 +111,20 @@ def _get(url: str, params: Any = None, ttl: int = 300) -> dict:
     with _lock:
         _cache[key] = (now + ttl, d)
     return d
+
+
+def _has_hosted_chapter(manga_id: str) -> bool:
+    try:
+        d = _get(f"{BASE}/manga/{manga_id}/feed",
+                 _params([("limit", 1), ("offset", 0),
+                          ("translatedLanguage[]", ["id", "en"]),
+                          ("includeEmptyPages", 0),
+                          ("includeFutureUpdates", 0)]),
+                 ttl=900)
+        return int(d.get("total") or 0) > 0
+    except Exception:
+        # Saat sumber error, tampilkan apa adanya daripada menyembunyikan judul.
+        return True
 
 
 def _params(items: list[tuple[str, Any]]) -> list[tuple[str, str]]:
@@ -252,9 +267,10 @@ def list_items(page: int = 1, genre: str = "", q: str = "", sort: str = "date") 
     q = (q or "").strip()
     sort = (sort or "date").strip().lower()
     limit = 24
+    fetch_limit = 30
     offset = (page - 1) * limit
     params = [
-        ("limit", limit), ("offset", offset),
+        ("limit", fetch_limit), ("offset", offset),
         ("includes[]", ["cover_art", "author", "artist"]),
         ("contentRating[]", ["safe"]),
         ("availableTranslatedLanguage[]", ["id", "en"]),
@@ -271,6 +287,10 @@ def list_items(page: int = 1, genre: str = "", q: str = "", sort: str = "date") 
     rows = d.get("data") or []
     ids = [r.get("id") for r in rows if r.get("id")]
     stats = _statistics(ids)
+    # Sembunyikan judul yang tidak punya chapter ID/EN yang dihost (hanya tautan eksternal/resmi).
+    with ThreadPoolExecutor(max_workers=12) as ex:
+        flags = list(ex.map(_has_hosted_chapter, ids))
+    rows = [r for r, ok in zip(rows, flags) if ok][:limit]
     total = int(d.get("total") or 0)
     max_page = max(1, (total + limit - 1) // limit)
     return {"configured": True,
@@ -384,7 +404,8 @@ def pages(url: str, ch: int | float | str) -> dict | None:
             chosen = r
             break
     if not chosen:
-        return {"images": [], "count": 0, "label": f"Chapter {want:g}", "src_ok": False}
+        return {"images": [], "count": 0, "label": f"Chapter {want:g}", "src_ok": False,
+                "reason": "Tidak ada chapter ID/EN yang dihost di MangaDex"}
     cid = chosen.get("id")
     a = chosen.get("attributes") or {}
     d = _get(f"{BASE}/at-home/server/{cid}", ttl=600)
@@ -393,7 +414,8 @@ def pages(url: str, ch: int | float | str) -> dict | None:
     h = chap.get("hash")
     data = chap.get("data") or []
     if not base or not h or not data:
-        return {"images": [], "count": 0, "label": a.get("title") or f"Chapter {want:g}", "src_ok": False}
+        return {"images": [], "count": 0, "label": a.get("title") or f"Chapter {want:g}", "src_ok": False,
+                "reason": "Server gambar MangaDex tidak mengembalikan data chapter"}
     urls = [f"{base}/data/{h}/{name}" for name in data]
     src_ok = True
     try:

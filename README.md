@@ -9,7 +9,7 @@ Agregator streaming anime dan baca manga dengan antarmuka lokal: **MIRU** (anime
 ## Fitur
 
 - **MIRU (`/baru`)**: anime on-going, jadwal rilis, genre, pencarian lokal/full-text, detail episode, streaming via relay, download link, favorit, progress tonton, PWA.
-- **SHIRO (`/shiro`)**: katalog manga biasa dari MangaDex (tanpa auth), filter genre/sort/pencarian, detail + daftar chapter, reader vertikal/per-halaman, cover via relay lokal.
+- **SHIRO (`/shiro`)**: katalog manga biasa dari MangaDex (tanpa auth), filter genre/sort/pencarian, detail + daftar chapter, reader vertikal/per-halaman, cover via relay lokal. Katalog hanya menampilkan judul yang punya chapter ID/EN yang dihost MangaDex; judul yang hanya punya tautan eksternal/resmi disembunyikan agar tombol baca tidak kosong.
 - **YOMU (`/manga`)**: reader manga 18+ dari nhentai API v2. Halaman memuat peringatan 18+; jangan dibuka jika belum dewasa.
 - **Web lama (`/`)**: UI original AnimeHub + PWA.
 - **SQLite**: cache anime, progress, favorit. Database dibuat lokal dan **tidak ikut di repo**.

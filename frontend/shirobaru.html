@@ -770,7 +770,7 @@ function pcard(m,i=0,{bm=false}={}){
       <img class="pimg" loading="lazy" src="${esc(cover(m))}" alt="${esc(m.title)}">
       ${m.status?`<span class="pbadge">${esc(m.status.toUpperCase())}</span>`:''}
       ${bm?`<button class="pbm ${isSaved(m.id)?'on':''}" data-action="toggle-list" data-id="${m.id}" aria-label="Tambah ke Daftar Saya"><i data-lucide="bookmark"></i></button>`:''}
-      <button class="pplay" data-action="open-reader" data-id="${m.id}" data-ch="${pr?pr.ch:1}" data-page="${pr?pr.page:1}" aria-label="Baca ${esc(m.title)}"><i data-lucide="book-open"></i></button>
+      <button class="pplay" data-action="${pr?'open-reader':'open-detail'}" data-id="${m.id}" data-ch="${pr?pr.ch:1}" data-page="${pr?pr.page:1}" aria-label="Baca ${esc(m.title)}"><i data-lucide="book-open"></i></button>
     </div>
     <h3 class="pt">${esc(m.title)}</h3>
     <p class="pm2">${m.chapters} CH · ${esc((m.genres[0]||m.status||'').toUpperCase())}</p>
@@ -868,7 +868,7 @@ function homeHTML(items,popular,featured){
           <div class="fr1"><h3 class="ft">${esc(m.title)}</h3><span class="fago">${m.chapters} CH</span></div>
           <div class="fr2">
             <span class="fst">${esc((m.genres[0]||m.status||'MANGA').toUpperCase())}</span>
-            <span class="fchs"><button class="fch" data-action="open-reader" data-id="${m.id}" data-ch="${m.latest||1}">BACA<em>BARU</em></button></span>
+            <span class="fchs"><button class="fch" data-action="open-detail" data-id="${m.id}">BACA<em>BARU</em></button></span>
           </div>
         </div>
       </article>`).join('')}
@@ -920,7 +920,7 @@ function heroFill(i){
   $('#hMeta').innerHTML=metaRow(m);
   $('#hDesc').textContent=m.desc||m.alt||m.genres.join(', ');
   $('#hCta').innerHTML=`
-    <button class="btn btn-acc" data-action="open-reader" data-id="${m.id}" data-ch="${pr?pr.ch:1}" data-page="${pr?pr.page:1}">
+    <button class="btn btn-acc" data-action="${pr?'open-reader':'open-detail'}" data-id="${m.id}" data-ch="${pr?pr.ch:1}" data-page="${pr?pr.page:1}">
       <i data-lucide="book-open"></i>${pr?'Lanjutkan':'Mulai Baca'}</button>
     <button class="btn ${inl?'btn-on':''}" data-action="toggle-list" data-id="${m.id}">
       <i data-lucide="${inl?'bookmark-check':'bookmark'}"></i><span class="bml">${inl?'Di Daftarku':'Daftarku'}</span></button>`;
@@ -1082,17 +1082,18 @@ async function openReader(id,ch=1,page=1){
   clearTimeout(r.idleT);
   const chMeta=(c.chList||[]).find(x=>+x.no===+ch)||{no:ch,title:'Chapter '+ch,pages:0};
   Object.assign(r,{open:true,id,ch:+ch,chTitle:chMeta.title,item:c,page:1,pages:0,arr:[],src_ok:null,
-    endShown:false,mode:r.mode||'v',dir:'ltr',wide:false});
+    error:null,endShown:false,mode:r.mode||'v',dir:'ltr',wide:false});
   if(state.searchOpen)closeSearch();
   buildReader();syncLock();
   try{
     const d=await api('/pages',{url:c.url,ch});
     if(!r.open||r.id!==id||+r.ch!==+ch)return;
     r.arr=d.images||[];r.pages=r.arr.length;r.src_ok=d.src_ok;
+    r.error=(!r.arr.length||d.error)?(d.error||d.reason||'Chapter tidak tersedia di sumber'):null;
     r.page=Math.min(Math.max(1,page),Math.max(1,r.pages));
     buildReader();
   }catch(e){
-    if(r.open&&r.id===id){r.pages=0;buildReader();toast('Gagal memuat halaman','info')}
+    if(r.open&&r.id===id){r.pages=0;r.error='Gagal memuat halaman';buildReader();toast('Gagal memuat halaman','info')}
   }
 }
 const pageUrl=k=>state.reader.arr[k-1]||PH;
@@ -1101,7 +1102,14 @@ function buildReader(){
   const title=m?(m.title+' · Ch '+r.ch):'Memuat…';
   const inl=m?isSaved(m.id):false;
   let mid='';
-  if(r.pages===0){
+  if(r.pages===0&&r.error){
+    mid=`<div class="rstage"><div style="max-width:520px;text-align:center;color:var(--mut);padding:28px">
+      <i data-lucide="book-x" style="width:34px;height:34px;color:var(--acc)"></i>
+      <h3 style="color:var(--txt);margin:14px 0 8px;font:800 22px var(--disp)">Chapter tidak tersedia</h3>
+      <p style="line-height:1.55">${esc(r.error)}. Judul ini mungkin hanya punya tautan resmi/eksternal di sumber, atau chapter belum diunggah. Pilih judul lain yang punya gambar chapter.</p>
+      <button class="btn btn-acc" data-action="r-detail" style="margin-top:16px"><i data-lucide="info"></i>Kembali ke detail</button>
+      </div></div>`;
+  }else if(r.pages===0){
     mid=`<div class="rstage"><div style="text-align:center;color:var(--mut)">
       <i data-lucide="loader" style="width:26px;height:26px"></i>
       <p style="margin-top:12px;font:500 12px var(--mono);letter-spacing:.14em">MEMUAT HALAMAN…</p></div></div>`;
@@ -1125,7 +1133,7 @@ function buildReader(){
     <div class="rtop">
       <button class="ic" data-action="close-reader" aria-label="Kembali"><i data-lucide="chevron-left"></i></button>
       <button class="rinfo" data-action="r-detail" aria-label="Detail">
-        <b>${esc(title)}</b><span id="rInfo">${r.pages?`CH ${r.ch} · ${r.pages} HAL · ${r.mode==='p'?'HALAMAN':'VERTIKAL'}`:'MEMUAT…'}</span>
+        <b>${esc(title)}</b><span id="rInfo">${r.pages?`CH ${r.ch} · ${r.pages} HAL · ${r.mode==='p'?'HALAMAN':'VERTIKAL'}`:(r.error?'TIDAK TERSEDIA':'MEMUAT…')}</span>
       </button>
       <button class="ic ${inl?'ic-on':''}" id="rBm" data-action="r-bm" aria-label="Daftar Saya"><i data-lucide="${inl?'bookmark-check':'bookmark'}"></i></button>
       <button class="ic" data-action="r-mode" aria-label="Ganti mode baca" title="Ganti mode baca"><i data-lucide="${r.mode==='p'?'gallery-vertical':'book-open'}"></i></button>
