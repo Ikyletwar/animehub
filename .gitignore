@@ -10,3 +10,5 @@ backend/_server.log
 *.bak-*
 .DS_Store
 backend/cache/
+node_modules/
+.netlify/

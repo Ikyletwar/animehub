@@ -654,6 +654,65 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;
 const icons = () => { try { window.lucide && lucide.createIcons(); } catch (e) {} };
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); };
 const api = async (u, o) => { const r = await fetch(u, o); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
+/* Netlify: simpan favorit/progress/continue di browser (tanpa server DB) */
+const LS_KEY = 'animehub_local_v1';
+const localRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { return {}; } };
+const localWrite = (d) => { try { localStorage.setItem(LS_KEY, JSON.stringify(d)); } catch (e) {} };
+const localFavList = () => (localRead().favorites || []).slice().sort((a,b) => (b.updated_at||0) - (a.updated_at||0));
+const localContinue = () => Object.values(localRead().progress || {}).sort((a,b) => (b.updated_at||0) - (a.updated_at||0)).slice(0, 12);
+const localProgressOf = (url) => (localRead().progress || {})[url] || null;
+const localToggleFav = (item) => {
+  const d = localRead();
+  d.favorites = Array.isArray(d.favorites) ? d.favorites : [];
+  const i = d.favorites.findIndex(x => x.url === item.url);
+  let is_fav;
+  if (i >= 0) {
+    d.favorites.splice(i, 1);
+    is_fav = false;
+  } else {
+    d.favorites.unshift({ url: item.url, title: item.title || '', thumb: item.thumb || '', updated_at: Math.floor(Date.now() / 1000) });
+    is_fav = true;
+  }
+  localWrite(d);
+  return { items: d.favorites, is_fav };
+};
+const localSaveProgress = (body) => {
+  if (!body || !body.anime_url || !body.episode_url) return { ok: false };
+  const d = localRead();
+  d.progress = d.progress || {};
+  const duration = +body.duration || 0;
+  d.progress[body.anime_url] = {
+    anime_url: body.anime_url,
+    episode_url: body.episode_url,
+    position: +body.position || 0,
+    duration,
+    anime_title: body.anime_title || '',
+    ep_title: body.ep_title || '',
+    thumb: body.thumb || '',
+    quality: body.quality || '',
+    percent: duration ? Math.round(((+body.position || 0) / duration) * 100) : 0,
+    updated_at: Math.floor(Date.now() / 1000)
+  };
+  localWrite(d);
+  return { ok: true };
+};
+const localApi = async (u, o) => {
+  const url = new URL(u, location.origin);
+  const path = url.pathname;
+  if (path === '/api/favorites') {
+    if (o && o.method === 'POST') {
+      let body = {}; try { body = JSON.parse(o.body || '{}'); } catch (e) {}
+      return localToggleFav({ url: body.url || '', title: body.title || '', thumb: body.thumb || '' });
+    }
+    return { items: localFavList() };
+  }
+  if (path === '/api/progress' && o && o.method === 'POST') {
+    let body = {}; try { body = JSON.parse(o.body || '{}'); } catch (e) {}
+    return localSaveProgress(body);
+  }
+  if (path === '/api/continue') return { items: localContinue() };
+  return api(u, o);
+};
 
 /* poster cadangan bila cover belum tersedia */
 const phImg = t => 'data:image/svg+xml;utf8,' + encodeURIComponent(
@@ -868,7 +927,7 @@ async function renderHome() {
     <div class="bgrid">${'<div class="skl" style="height:250px"></div>'.repeat(5)}</div></section>`;
 
   const [cont, ong, top, sch] = await Promise.all([
-    api('/api/continue').catch(() => ({ items: [] })),
+    localApi('/api/continue').catch(() => ({ items: [] })),
     api('/api/ongoing').catch(() => ({ items: [] })),
     api('/api/top').catch(() => ({ items: [] })),
     api('/api/schedule').catch(() => ({ schedule: [] }))
@@ -1073,7 +1132,7 @@ async function renderList() {
     <div class="bgrid" id="lGrid"><div class="skl" style="height:250px"></div><div class="skl" style="height:250px"></div><div class="skl" style="height:250px"></div></div></section>`;
 
   let items = [];
-  try { const d = await api('/api/favorites'); items = d.items || []; } catch (e) {}
+  try { const d = await localApi('/api/favorites'); items = d.items || []; } catch (e) {}
   if (tok !== LR_TOK) return;
   state.favs = new Set(items.map(i => i.url)); updateBadges();
 
@@ -1175,6 +1234,8 @@ async function openModal(id) {
   let d = {};
   try { d = await api('/api/detail?url=' + encodeURIComponent(id)); } catch (e) { d = { error: true }; }
   if (state.modalId !== id) return;
+  d.progress = localProgressOf(id) || d.progress || null;
+  d.is_fav = localFavList().some(x => x.url === id);
 
   if (d.anime) memo(Object.assign({}, d.anime, { url: id }));
   const a2 = state.anime.get(id) || a0;
@@ -1332,7 +1393,7 @@ function saveProgress(force) {
     thumb: (a && a.thumb) || '', quality: p.q || ''
   };
   try {
-    fetch('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true }).catch(() => {});
+    localApi('/api/progress', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).catch(() => {});
   } catch (e) {}
 }
 
@@ -1647,7 +1708,7 @@ async function toggleList(id) {
   updateBadges();
   let ok = true;
   try {
-    const r = await api('/api/favorites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: id, title: a.title || '', thumb: a.thumb || '' }) });
+    const r = await localApi('/api/favorites', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ url: id, title: a.title || '', thumb: a.thumb || '' }) });
     if (r && typeof r.is_fav === 'boolean') { r.is_fav ? state.favs.add(id) : state.favs.delete(id); }
   } catch (e) { had ? state.favs.add(id) : state.favs.delete(id); ok = false; }
   if (!ok) { toast('Gagal menyimpan', 'x'); updateBadges(); return; }
@@ -1725,7 +1786,7 @@ onScroll();
    ---------------------------------------------------------------- */
 updateBadges();
 (async () => {
-  try { const d = await api('/api/favorites'); state.favs = new Set((d.items || []).map(i => i.url)); } catch (e) {}
+  try { const d = await localApi('/api/favorites'); state.favs = new Set((d.items || []).map(i => i.url)); } catch (e) {}
   updateBadges();
 })();
 go('home');

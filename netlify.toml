@@ -1,0 +1,47 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/frontend/webbaru.html"
+  status = 200
+
+[[redirects]]
+  from = "/baru"
+  to = "/frontend/webbaru.html"
+  status = 200
+
+[[redirects]]
+  from = "/shiro"
+  to = "/frontend/shirobaru.html"
+  status = 200
+
+[[redirects]]
+  from = "/manga"
+  to = "/frontend/mangabaru.html"
+  status = 200
+
+[[redirects]]
+  from = "/legacy"
+  to = "/web/index.html"
+  status = 200
+
+[[headers]]
+  for = "/frontend/*.html"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/web/*.js"
+  [headers.values]
+    Cache-Control = "no-cache"
