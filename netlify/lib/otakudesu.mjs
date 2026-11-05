@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { absUrl, cacheGet, cacheSet, clean, deSub, fetchText, nowSec } from './http.mjs';
+import seed from './seed.mjs';
 
 export const BASE = 'https://otakudesu.blog';
 const TTL_LIST = 6 * 3600;
@@ -32,7 +33,7 @@ export async function listAnime() {
   const cached = cacheGet('list');
   if (cached) return cached;
   const html = await get(`${BASE}/anime-list/`);
-  if (!html) return cacheGet('list') || [];
+  if (!html) return cacheGet('list') || seed.list;
   const $ = cheerio.load(html);
   const out = [], seen = new Set();
   $('.abjtext li a.hodebgst, #abtext li a.hodebgst, .daftarkartun li a').each((_, el) => {
@@ -44,7 +45,7 @@ export async function listAnime() {
     const title = clean($(el).text()) || clean($(el).attr('title') || '');
     if (title) out.push(anime({ title, url }));
   });
-  return cacheSet('list', out, TTL_LIST);
+  return cacheSet('list', out.length ? out : seed.list, TTL_LIST);
 }
 
 export async function ongoing() {
@@ -77,7 +78,7 @@ export async function ongoing() {
       if (title) out.push(anime({ title, url: url2, thumb: img.attr('src') || null, srcset: img.attr('srcset') || null, sched }));
     });
   }
-  return cacheSet('ongoing', out, TTL_ONGOING);
+  return cacheSet('ongoing', out.length ? out : seed.ongoing, TTL_ONGOING);
 }
 
 export async function search(q) {
@@ -180,7 +181,7 @@ export async function genres() {
   const cached = cacheGet('genres');
   if (cached) return cached;
   const html = await get(`${BASE}/genre-list/`);
-  if (!html) return [];
+  if (!html) return seed.genres;
   const $ = cheerio.load(html);
   const seen = new Set(), out = [];
   $('a[href*="/genres/"]').each((_, a) => {
@@ -193,7 +194,7 @@ export async function genres() {
     }
   });
   out.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-  return cacheSet('genres', out, TTL_GENRE);
+  return cacheSet('genres', out.length ? out : seed.genres, TTL_GENRE);
 }
 
 export async function byGenre(slug, page = 1) {
@@ -221,7 +222,7 @@ export async function schedule() {
   const cached = cacheGet('schedule');
   if (cached) return cached;
   const html = await get(`${BASE}/jadwal-rilis/`);
-  if (!html) return [];
+  if (!html) return seed.schedule;
   const $ = cheerio.load(html);
   const days = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
   const res = [];
@@ -239,7 +240,7 @@ export async function schedule() {
     });
     if (items.length) res.push({ day, items });
   });
-  return cacheSet('schedule', res, TTL_SCHED);
+  return cacheSet('schedule', res.length ? res : seed.schedule, TTL_SCHED);
 }
 
 export async function topAnime(limit = 12, sample = 12) {

@@ -143,12 +143,37 @@ const route = async (req) => {
   return json({ error: 'not found', path }, 404);
 };
 
-export default async (req) => {
+const run = async (req) => {
   try {
     return await route(req);
   } catch (e) {
     return json({ error: 'internal error', message: String(e?.message || e).slice(0, 200) }, 500);
   }
+};
+
+export default run;
+
+const lambdaToRequest = (event) => {
+  const rawPath = event?.rawPath || event?.path || '/';
+  const rawQuery = event?.rawQueryString ?? (event?.queryStringParameters ? new URLSearchParams(event.queryStringParameters).toString() : '');
+  const method = event?.httpMethod || event?.requestContext?.http?.method || 'GET';
+  const url = 'https://elegant-sable-dd27bc.netlify.app' + rawPath + (rawQuery ? '?' + rawQuery : '');
+  const headers = new Headers();
+  for (const [k, v] of Object.entries(event?.headers || {})) headers.set(k, String(v));
+  let body = event?.body;
+  if (body && event?.isBase64Encoded) body = Buffer.from(body, 'base64');
+  return new Request(url, { method, headers, body: method === 'GET' || method === 'HEAD' ? undefined : body });
+};
+
+export const handler = async (event) => {
+  const res = await run(lambdaToRequest(event));
+  const headers = Object.fromEntries(res.headers.entries());
+  return {
+    statusCode: res.status,
+    headers,
+    body: await res.text(),
+    isBase64Encoded: false,
+  };
 };
 
 export const config = { path: '/api/*' };
