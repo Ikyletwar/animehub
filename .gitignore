@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+backend/_server.log
+*.db
+*.db-shm
+*.db-wal
+*.bak
+*.bak-*
+.DS_Store
+backend/cache/

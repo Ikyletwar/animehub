@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0B0E">
+<meta name="description" content="YOMU — ruang membaca manga 18+ yang cepat, gelap, dan nyaman di mata. Khusus dewasa.">
+<title>YOMU 18+ — Baca Manga</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   1. TOKEN DESAIN — satu keluarga dengan MIRU
+   ============================================================ */
+:root{
+  --bg:#0B0B0E;
+  --bg2:#101014;
+  --card:#141419;
+  --line:rgba(255,255,255,.08);
+  --txt:#F2EFE8;
+  --mut:#9A98A0;
+  --dim:#7A7882;
+  --acc:#FF4B33;
+  --acc2:#FF6A50;
+  --disp:'Bricolage Grotesque',sans-serif;
+  --body:'Instrument Sans',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --pad:clamp(16px,4vw,48px);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{color-scheme:dark;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.locked{overflow:hidden}
+img{display:block}
+button{font-family:inherit}
+::selection{background:var(--acc);color:#fff}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#26262d;border-radius:99px;border:3px solid var(--bg)}
+.mono{font-family:var(--mono)}
+.wrap{max-width:1440px;margin-inline:auto;padding-inline:var(--pad)}
+.live{width:6px;height:6px;border-radius:50%;background:var(--acc);display:inline-block;flex:none;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.2}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes hIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes shUp{from{transform:translateY(60px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes mIn{from{transform:translateY(14px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+
+/* ============================================================
+   2. HEADER
+   ============================================================ */
+.hdr{position:sticky;top:0;z-index:70;border-bottom:1px solid transparent;transition:background .3s,border-color .3s;background:transparent}
+.hdr.sc{background:rgba(11,11,14,.84);backdrop-filter:blur(14px);border-color:var(--line)}
+.hdw{display:flex;align-items:center;gap:26px;height:60px;max-width:1440px;margin:auto;padding-inline:var(--pad)}
+.logo{display:flex;align-items:center;gap:4px;background:none;border:0;cursor:pointer;font:800 1.3rem var(--disp);letter-spacing:-.02em;color:var(--txt)}
+.logo i{width:7px;height:7px;border-radius:50%;background:var(--acc);margin-top:9px}
+.hnav{display:none;gap:24px;margin-left:6px}
+.hnav button{background:none;border:0;cursor:pointer;color:var(--mut);font:600 .9rem var(--body);padding:4px 0;position:relative;transition:color .2s}
+.hnav button:hover{color:var(--txt)}
+.hnav button.on{color:var(--txt)}
+.hnav button.on::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:2px;border-radius:2px;background:var(--acc)}
+.hnav sup{font:700 9px var(--mono);color:var(--acc);margin-left:3px}
+.hnav-x{background:none;border:0;cursor:pointer;color:var(--mut);font:600 .9rem var(--body);padding:4px 0;text-decoration:none;position:relative;transition:color .2s}
+.hnav-x:hover{color:var(--txt)}
+.age18{display:inline-block;font:700 9px/1 var(--mono);letter-spacing:.08em;color:#FFD9D0;background:rgba(255,75,51,.16);border:1px solid rgba(255,75,51,.5);padding:2px 5px;border-radius:5px;vertical-align:1px;white-space:nowrap}
+.age18.big{font-size:11px;padding:3px 7px;border-radius:6px;vertical-align:2px}
+.f18{display:flex;align-items:center;gap:10px;margin:16px 0 0;max-width:44ch;font-size:.86rem;font-weight:600;line-height:1.5;color:#FFD9D0;opacity:.9}
+.icbtn{margin-left:auto;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--txt);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.icbtn:hover{border-color:var(--acc);color:var(--acc)}
+.icbtn svg{width:17px;height:17px}
+@media(min-width:960px){.hnav{display:flex}}
+
+/* ============================================================
+   3. BOTTOM NAV (MOBILE)
+   ============================================================ */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;background:rgba(11,11,14,.88);backdrop-filter:blur(18px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.bni{flex:1;position:relative;background:none;border:0;cursor:pointer;color:var(--dim);display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0 8px;font:500 9.5px var(--mono);letter-spacing:.08em;transition:color .2s}
+.bni svg{width:20px;height:20px}
+.bni.on{color:var(--txt)}
+.bni.on::before{content:"";position:absolute;top:-1px;width:20px;height:2px;border-radius:2px;background:var(--acc)}
+.bni .cnt{position:absolute;top:5px;left:calc(50% + 8px);min-width:15px;height:15px;padding:0 4px;border-radius:99px;background:var(--acc);color:#fff;font:700 9px var(--mono);font-style:normal;display:grid;place-items:center}
+.bni .cnt.hide{display:none}
+@media(min-width:960px){.bnav{display:none}}
+
+/* ============================================================
+   4. VIEW & SECTION
+   ============================================================ */
+main{min-height:62vh}
+.view{display:none}
+.view.show{display:block;animation:viewIn .35s ease}
+.sec{margin-top:clamp(38px,6vw,66px)}
+.sec-h{display:flex;align-items:baseline;gap:11px;margin-bottom:18px}
+.sidx{font:600 10px var(--mono);letter-spacing:.1em;color:var(--acc)}
+.stt{font:800 clamp(1.25rem,2.6vw,1.7rem) var(--disp);letter-spacing:-.02em}
+.sp{flex:1}
+
+/* ============================================================
+   5. HERO
+   ============================================================ */
+.hero{position:relative;padding-top:clamp(18px,3vw,42px)}
+.hero::before{ /* screentone manga */
+  content:"";position:absolute;inset:0 0 auto 0;height:460px;pointer-events:none;
+  background-image:radial-gradient(rgba(255,255,255,.055) 1px,transparent 1.4px);
+  background-size:13px 13px;
+  -webkit-mask-image:linear-gradient(#000 20%,transparent);mask-image:linear-gradient(#000 20%,transparent);
+}
+.hgrid{display:grid;gap:26px;position:relative}
+.hvis{order:-1;display:flex;justify-content:center;gap:18px}
+@media(min-width:960px){
+  .hgrid{grid-template-columns:1.05fr .8fr;align-items:center;gap:clamp(40px,5vw,72px)}
+  .hvis{order:0;justify-content:flex-end;align-items:center}
+}
+.hframe{position:relative;display:block;width:min(76vw,300px);aspect-ratio:3/4;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);cursor:pointer;padding:0}
+@media(min-width:960px){.hframe{width:min(380px,30vw);aspect-ratio:2/3}}
+.hframe img{width:100%;height:100%;object-fit:cover;filter:grayscale(.85) contrast(1.05) brightness(.88);transition:filter .6s,transform .9s cubic-bezier(.2,.7,.2,1)}
+.hframe:hover img{filter:grayscale(0);transform:scale(1.04)}
+.hframe::after{content:"";position:absolute;inset:auto 0 0 0;height:36%;background:linear-gradient(to top,rgba(8,8,10,.72),transparent);pointer-events:none}
+.hbadge{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:8px;font:600 9.5px var(--mono);letter-spacing:.14em;color:var(--txt);background:rgba(9,9,12,.72);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:99px;padding:6px 11px}
+.hch{position:absolute;left:12px;bottom:12px;z-index:2;font:600 9.5px var(--mono);letter-spacing:.14em;color:var(--txt);background:rgba(9,9,12,.78);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:6px;padding:6px 9px}
+.hrom{display:none;writing-mode:vertical-rl;user-select:none;font:700 clamp(1.3rem,2vw,2rem) var(--disp);letter-spacing:.32em;color:transparent;-webkit-text-stroke:1px rgba(242,239,232,.22)}
+@media(min-width:960px){.hrom{display:block;align-self:center}}
+.swap{animation:hIn .55s cubic-bezier(.2,.8,.25,1) both}
+.hkick{display:flex;align-items:center;gap:10px;font:600 10.5px var(--mono);letter-spacing:.18em;color:var(--mut)}
+.htitle{font:750 clamp(2.35rem,7.4vw,4.4rem)/.98 var(--disp);letter-spacing:-.025em;margin:16px 0 18px;text-wrap:balance}
+.mrow{display:flex;flex-wrap:wrap;align-items:center;font:500 11px var(--mono);letter-spacing:.08em;color:var(--mut)}
+.mrow>*{display:inline-flex;align-items:center;gap:5px}
+.mrow>*+*::before{content:"·";margin:0 11px;color:#4A4850}
+.mrow .mr-r{color:var(--txt)}
+.mrow .mr-r svg{width:12px;height:12px;color:var(--acc);fill:var(--acc)}
+.mrow .mr-st{color:var(--acc)}
+.hdesc{margin:18px 0 26px;color:var(--mut);max-width:54ch;font:400 .96rem/1.7 var(--body)}
+.hcta{display:flex;gap:11px;flex-wrap:wrap}
+.hsegs{display:flex;gap:8px;margin-top:32px;max-width:320px}
+.seg{flex:1;background:none;border:0;cursor:pointer;padding:8px 0}
+.seg i{display:block;height:2px;border-radius:99px;background:rgba(255,255,255,.15);position:relative;overflow:hidden;transition:background .3s}
+.seg.done i{background:rgba(255,255,255,.32)}
+.seg.act i::after{content:"";position:absolute;inset:0;background:var(--acc);transform-origin:left;animation:segfill 7s linear forwards}
+.hero:hover .seg.act i::after{animation-play-state:paused}
+@keyframes segfill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* ============================================================
+   6. TOMBOL
+   ============================================================ */
+.btn{display:inline-flex;align-items:center;gap:9px;padding:13px 22px;border-radius:99px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--txt);font:600 .9rem var(--body);cursor:pointer;backdrop-filter:blur(4px);transition:transform .2s,background .2s,border-color .2s,color .2s}
+.btn svg{width:16px;height:16px}
+.btn:hover{border-color:rgba(255,255,255,.3);transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.btn-acc{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn-acc:hover{background:var(--acc2);border-color:var(--acc2)}
+.btn-on{border-color:var(--acc);color:var(--acc);background:rgba(255,75,51,.08)}
+.btn-on:hover{border-color:var(--acc)}
+
+/* ============================================================
+   7. MARQUEE
+   ============================================================ */
+.marq{margin-top:clamp(30px,4.5vw,48px);border-block:1px solid var(--line);padding:13px 0;overflow:hidden;user-select:none}
+.marq-in{display:flex;align-items:center;gap:18px;width:max-content;animation:marq 32s linear infinite;font:500 10.5px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.marq-in b{color:var(--acc);font-weight:400}
+@keyframes marq{to{transform:translateX(-50%)}}
+
+/* ============================================================
+   8. RAIL
+   ============================================================ */
+.rail{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:2px;
+  padding:4px max(var(--pad),calc((100vw - 1440px)/2 + var(--pad))) 10px}
+.rail::-webkit-scrollbar{display:none}
+.rarr{display:none;gap:6px}
+.rarr button{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--mut);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.rarr button:hover{border-color:var(--acc);color:var(--acc)}
+.rarr svg{width:15px;height:15px}
+@media(min-width:960px){.rarr{display:flex}}
+
+/* ============================================================
+   9. KARTU / LANJUT BACA / RANKING
+   ============================================================ */
+.pcard{width:152px;flex:none;scroll-snap-align:start;cursor:pointer;animation:rise .55s both;animation-delay:calc(var(--i,0)*45ms)}
+@media(min-width:600px){.pcard{width:176px}}
+.pm{position:relative;aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--card);border:1px solid var(--line)}
+.pimg{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.06) brightness(.9);transition:filter .45s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.pcard:hover .pimg,.rank:hover .pimg{filter:none;transform:scale(1.06)}
+.pbadge{position:absolute;top:8px;left:8px;display:inline-flex;align-items:center;gap:6px;font:600 8.5px var(--mono);letter-spacing:.12em;color:var(--txt);background:rgba(9,9,12,.78);backdrop-filter:blur(6px);border:1px solid var(--line);border-radius:6px;padding:4px 7px}
+.pplay{position:absolute;right:8px;bottom:8px;width:30px;height:30px;border-radius:50%;border:0;background:var(--acc);color:#fff;display:grid;place-items:center;cursor:pointer;transition:transform .25s}
+.pcard:hover .pplay{transform:scale(1.12)}
+.pplay svg{width:13px;height:13px}
+.pbm{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:rgba(9,9,12,.78);backdrop-filter:blur(6px);color:#D8D5CE;display:grid;place-items:center;cursor:pointer;transition:.2s}
+.pbm svg{width:13px;height:13px}
+.pbm.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.pt{margin-top:10px;font:600 .85rem/1.3 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm2{margin-top:4px;font:500 9.5px var(--mono);letter-spacing:.06em;color:var(--dim)}
+
+/* lanjut baca */
+.bcard{width:min(320px,80vw);flex:none;scroll-snap-align:start;display:flex;gap:14px;align-items:center;cursor:pointer;animation:rise .55s both;animation-delay:calc(var(--i,0)*45ms);border:1px solid var(--line);border-radius:14px;padding:10px;background:var(--bg2);transition:border-color .2s}
+.bcard:hover{border-color:rgba(255,255,255,.26)}
+.bcimg{width:72px;height:100px;object-fit:cover;border-radius:8px;border:1px solid var(--line);filter:grayscale(1);transition:filter .35s;flex:none}
+.bcard:hover .bcimg{filter:none}
+.bcin{flex:1;min-width:0}
+.bcin .pt{margin:0}
+.bcb{display:flex;align-items:center;gap:10px;margin-top:11px}
+.bcbar{flex:1;height:3px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.bcbar i{display:block;height:100%;background:var(--acc)}
+.bcpct{font:700 10.5px var(--mono);color:var(--acc);flex:none}
+
+/* ranking */
+.rank{position:relative;width:200px;flex:none;scroll-snap-align:start;cursor:pointer;animation:rise .55s both;animation-delay:calc(var(--i,0)*45ms)}
+.rn{position:absolute;left:-5px;bottom:48px;z-index:2;pointer-events:none;font:800 86px/1 var(--disp);letter-spacing:-.05em;color:transparent;-webkit-text-stroke:1.5px rgba(242,239,232,.42)}
+
+/* ============================================================
+   10. FEED UPDATE TERBARU — jantung situs manga
+   ============================================================ */
+.feed{display:flex;flex-direction:column}
+.frow{display:flex;gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:13px 2px;cursor:pointer;color:var(--txt);transition:padding .2s}
+.frow:hover{padding-left:10px}
+.fimg{width:52px;height:70px;object-fit:cover;border-radius:7px;border:1px solid var(--line);filter:grayscale(1);transition:filter .3s;flex:none}
+.frow:hover .fimg{filter:none}
+.fin{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px}
+.fr1{display:flex;align-items:baseline;gap:10px}
+.ft{font:700 1rem var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .2s}
+.frow:hover .ft{color:var(--acc)}
+.fago{margin-left:auto;font:500 9.5px var(--mono);letter-spacing:.08em;color:var(--dim);flex:none}
+.fr2{display:flex;align-items:center;gap:12px;min-width:0}
+.fst{font:600 9px var(--mono);letter-spacing:.12em;color:var(--dim);display:inline-flex;align-items:center;gap:5px;flex:none}
+.fchs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
+.fchs::-webkit-scrollbar{display:none}
+.fch{font:700 10.5px var(--mono);letter-spacing:.06em;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:7px;padding:5px 8px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:5px;flex:none}
+.fch em{font:700 7.5px var(--mono);letter-spacing:.08em;color:#fff;background:var(--acc);border-radius:3px;padding:1.5px 3.5px;font-style:normal}
+.fch:hover{border-color:var(--acc);color:var(--txt)}
+
+/* ============================================================
+   11. PILIHAN REDAKSI
+   ============================================================ */
+.edgrid{display:grid;gap:16px}
+@media(min-width:960px){.edgrid{grid-template-columns:1.15fr .85fr;gap:40px}}
+.edfeat{position:relative;display:block;width:100%;min-height:400px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--card);cursor:pointer;padding:0;text-align:left;color:var(--txt)}
+.edfeat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(.9) brightness(.5);transition:filter .6s,transform .9s cubic-bezier(.2,.7,.2,1)}
+.edfeat:hover img{filter:grayscale(.15) brightness(.62);transform:scale(1.05)}
+.edfeat::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,10,.92),rgba(8,8,10,.2) 55%,transparent)}
+.ein{position:relative;z-index:2;min-height:400px;padding:clamp(20px,3vw,34px);display:flex;flex-direction:column;justify-content:flex-end;gap:12px}
+.ekick{font:600 10px var(--mono);letter-spacing:.18em;color:var(--acc)}
+.et2{font:800 clamp(1.6rem,3vw,2.3rem) var(--disp);letter-spacing:-.02em}
+.eq{font:500 1rem/1.65 var(--body);color:#D8D5CE;max-width:46ch}
+.elink{display:inline-flex;align-items:center;gap:7px;margin-top:4px;font:600 10.5px var(--mono);letter-spacing:.16em;color:var(--txt)}
+.elink svg{width:14px;height:14px;color:var(--acc)}
+.edlist{display:flex;flex-direction:column}
+.edrow{display:flex;align-items:center;gap:14px;width:100%;padding:14px 2px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--txt);cursor:pointer;text-align:left;transition:padding .25s}
+.edrow:hover{padding-left:10px}
+.edn{font:600 10px var(--mono);color:var(--dim);width:22px;flex:none}
+.edth{width:46px;height:60px;object-fit:cover;border-radius:7px;border:1px solid var(--line);filter:grayscale(1);transition:filter .4s;flex:none}
+.edrow:hover .edth{filter:none}
+.edtx{flex:1;min-width:0}
+.edt{font:700 1rem var(--disp);transition:color .2s}
+.edrow:hover .edt{color:var(--acc)}
+.ednote{margin-top:3px;font:400 .8rem/1.45 var(--body);color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.edch{width:16px;height:16px;color:var(--dim);flex:none;transition:transform .2s,color .2s}
+.edrow:hover .edch{transform:translateX(3px);color:var(--acc)}
+
+/* ============================================================
+   12. JELAJAH & DAFTAR
+   ============================================================ */
+.ph{margin:clamp(22px,4vw,40px) 0 16px;display:flex;flex-direction:column;gap:7px}
+.ph-t{font:800 clamp(2rem,6vw,3rem) var(--disp);letter-spacing:-.03em}
+.ph-s{font:500 10px var(--mono);letter-spacing:.18em;color:var(--dim)}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:14px calc(var(--pad)*-1) 6px;padding:2px var(--pad)}
+.chips::-webkit-scrollbar{display:none}
+.chips+.chips{margin-top:0}
+@media(min-width:960px){.chips{flex-wrap:wrap;overflow:visible;margin-inline:0;padding-inline:0}}
+.chip{flex:none;font:600 12px var(--body);padding:8px 15px;border-radius:99px;border:1px solid var(--line);background:none;color:var(--mut);cursor:pointer;transition:.2s}
+.chip:hover{color:var(--txt);border-color:rgba(255,255,255,.28)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.brow{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:14px 0 22px}
+.bcount{font:500 10px var(--mono);letter-spacing:.14em;color:var(--dim)}
+.selw{display:inline-flex;align-items:center;gap:9px;font:600 9.5px var(--mono);letter-spacing:.14em;color:var(--dim)}
+.sel{background:var(--bg2);border:1px solid var(--line);color:var(--txt);font:500 12.5px var(--body);padding:9px 13px;border-radius:10px;cursor:pointer}
+.bgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 14px}
+.bgrid .pcard{width:auto}
+@media(min-width:560px){.bgrid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:960px){.bgrid{grid-template-columns:repeat(4,1fr);gap:30px 20px}}
+@media(min-width:1280px){.bgrid{grid-template-columns:repeat(5,1fr)}}
+.empty{border:1px dashed rgba(255,255,255,.14);border-radius:20px;padding:64px 22px;display:grid;place-items:center;gap:6px;text-align:center;margin-top:8px}
+.empty h3{font:700 1.25rem var(--disp);margin-top:10px}
+.empty p{color:var(--mut);font-size:.9rem;line-height:1.6;max-width:38ch;margin-bottom:16px}
+.eic{width:60px;height:60px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);display:grid;place-items:center;color:var(--mut)}
+.eic svg{width:24px;height:24px}
+
+/* ============================================================
+   13. MODAL DETAIL
+   ============================================================ */
+.ovl{position:fixed;inset:0;z-index:80}
+.mback{position:absolute;inset:0;background:rgba(7,7,9,.72);backdrop-filter:blur(10px);animation:fadeIn .3s}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92dvh;overflow-y:auto;background:var(--bg2);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;animation:shUp .5s cubic-bezier(.2,.9,.3,1)}
+@media(min-width:960px){
+  .ovl{display:grid;place-items:center;padding:28px}
+  .sheet{position:relative;inset:auto;width:min(940px,100%);max-height:min(88vh,860px);border-radius:18px;border-bottom:1px solid var(--line);animation:mIn .35s cubic-bezier(.2,.9,.3,1)}
+}
+.mx{position:absolute;top:14px;right:14px;z-index:5;width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:rgba(12,12,16,.7);backdrop-filter:blur(8px);color:var(--txt);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.mx:hover{background:var(--acc);border-color:var(--acc)}
+.mx svg{width:16px;height:16px}
+.mhero{display:grid;grid-template-columns:1fr;gap:20px;padding:clamp(18px,3vw,30px)}
+@media(min-width:720px){.mhero{grid-template-columns:250px 1fr;gap:30px}}
+.mp{aspect-ratio:3/4;border-radius:12px;overflow:hidden;border:1px solid var(--line);max-width:320px;width:100%}
+@media(min-width:720px){.mp{max-width:none;aspect-ratio:2/3}}
+.mp img{width:100%;height:100%;object-fit:cover;filter:grayscale(.6)}
+.mkick{font:600 10px var(--mono);letter-spacing:.16em;color:var(--dim)}
+.mt{font:800 clamp(1.6rem,4.5vw,2.4rem)/1.02 var(--disp);letter-spacing:-.025em;margin:9px 0 13px}
+.mgens{display:flex;gap:7px;flex-wrap:wrap;margin:13px 0 15px}
+.mgens .chip{pointer-events:none}
+.mdesc{color:var(--mut);font:400 .92rem/1.7 var(--body);margin-bottom:20px}
+.mcta{display:flex;gap:10px;flex-wrap:wrap}
+.meps{padding:4px clamp(18px,3vw,30px) clamp(22px,3vw,30px)}
+.meps-h{display:flex;align-items:baseline;gap:10px;border-top:1px solid var(--line);padding-top:18px;margin-bottom:8px}
+.meps-h h3{font:700 1.05rem var(--disp)}
+.mcnt{margin-left:auto;font:500 10px var(--mono);letter-spacing:.1em;color:var(--dim)}
+.eplist{max-height:320px;overflow-y:auto;padding-right:4px}
+.epr{display:flex;align-items:center;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:none;color:var(--txt);cursor:pointer;text-align:left;transition:background .15s}
+.epr:hover{background:rgba(255,255,255,.05)}
+.epr.cur{background:rgba(255,75,51,.07)}
+.en{font:700 10.5px var(--mono);color:var(--acc);width:34px;flex:none}
+.et{flex:1;min-width:0;display:flex;align-items:center;gap:8px;font:600 .88rem var(--body)}
+.etag{font:700 8.5px var(--mono);letter-spacing:.12em;padding:3px 6px;border-radius:4px;background:rgba(255,255,255,.09);color:var(--mut)}
+.etag.new{background:var(--acc);color:#fff}
+.ed{font:500 10px var(--mono);color:var(--dim);flex:none}
+.eic2{width:14px;height:14px;color:var(--dim);flex:none;transition:.2s}
+.epr:hover .eic2{color:var(--acc)}
+.eic2.rd{color:#5E5C66}
+.chmore{display:flex;justify-content:center;padding:14px 0 4px}
+
+/* ============================================================
+   14. PENCARIAN
+   ============================================================ */
+.srch{position:fixed;inset:0;z-index:85;background:rgba(7,7,9,.86);backdrop-filter:blur(16px);overflow-y:auto;animation:fadeIn .25s}
+.sw{width:min(780px,100%);margin:0 auto;padding:clamp(24px,7vh,70px) var(--pad) 80px}
+.sbox{display:flex;align-items:center;gap:14px;border-bottom:2px solid var(--line);padding-bottom:16px;transition:border-color .25s}
+.sbox:focus-within{border-color:var(--acc)}
+.sbox>svg{width:22px;height:22px;color:var(--dim);flex:none}
+.sbox input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--txt);font:600 clamp(1.25rem,4.5vw,1.8rem) var(--disp);letter-spacing:-.02em}
+.sbox input::placeholder{color:#55535C}
+.scl{width:36px;height:36px;flex:none;border-radius:50%;border:1px solid var(--line);background:none;color:var(--mut);display:grid;place-items:center;cursor:pointer;transition:.2s}
+.scl:hover{color:var(--txt);border-color:rgba(255,255,255,.3)}
+.scl svg{width:15px;height:15px}
+.slabel{font:600 10px var(--mono);letter-spacing:.2em;color:var(--dim);margin:28px 0 6px}
+.srow{display:flex;align-items:center;gap:16px;width:100%;padding:12px 6px;border:0;border-bottom:1px solid var(--line);background:none;color:var(--txt);cursor:pointer;text-align:left;transition:padding .2s}
+.srow:hover{padding-left:12px}
+.srow img{width:44px;height:60px;object-fit:cover;border-radius:7px;border:1px solid var(--line);filter:grayscale(1);transition:filter .3s;flex:none}
+.srow:hover img{filter:none}
+.srt{flex:1;min-width:0;font:700 1rem var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.srm{font:500 9.5px var(--mono);letter-spacing:.06em;color:var(--dim);display:none}
+@media(min-width:640px){.srm{display:block}}
+.srow>svg{width:15px;height:15px;color:var(--dim);flex:none;transition:.2s}
+.srow:hover>svg{color:var(--acc);transform:translate(2px,-2px)}
+.sempty{text-align:center;padding:54px 16px;display:grid;place-items:center;gap:8px}
+.sempty h3{font:700 1.2rem var(--disp)}
+.sempty p{color:var(--mut);font-size:.88rem;max-width:40ch;line-height:1.6}
+
+/* ============================================================
+   15. READER — signature moment
+   ============================================================ */
+.rdr{position:fixed;inset:0;z-index:95;background:#050506;animation:fadeIn .25s}
+.rprog{position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,.07);z-index:8}
+.rprog i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+.rtop{position:absolute;top:0;left:0;right:0;z-index:7;display:flex;align-items:center;gap:8px;padding:14px 14px 28px;background:linear-gradient(to bottom,rgba(5,5,6,.92),rgba(5,5,6,0));transition:opacity .3s,transform .3s}
+.rdr.idle .rtop{opacity:0;transform:translateY(-10px);pointer-events:none}
+.rinfo{flex:1;min-width:0;background:none;border:0;padding:0;color:var(--txt);cursor:pointer;text-align:left}
+.rinfo b{display:block;font:700 .92rem var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rinfo span{display:block;margin-top:3px;font:500 9.5px var(--mono);letter-spacing:.14em;color:var(--mut)}
+.ic{width:38px;height:38px;flex:none;border-radius:50%;border:0;background:none;color:#EDEAE3;display:grid;place-items:center;cursor:pointer;transition:background .2s,color .2s}
+.ic:hover{background:rgba(255,255,255,.12);color:#fff}
+.ic svg{width:18px;height:18px}
+.ic.ic-on{color:var(--acc)}
+/* mode halaman */
+.rstage{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
+.rstage .rpage{width:auto;height:auto;max-width:100%;max-height:100%;box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.zones{position:absolute;inset:0;z-index:3;display:grid;grid-template-columns:1fr 1.3fr 1fr}
+.zone{cursor:pointer}
+.rarrow{position:absolute;top:50%;transform:translateY(-50%);z-index:4;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(10,10,12,.6);backdrop-filter:blur(6px);color:#EDEAE3;display:grid;place-items:center;cursor:pointer;opacity:0;transition:.25s}
+@media(hover:hover){.rdr:not(.idle) .rarrow{opacity:.85}.rarrow:hover{border-color:var(--acc);color:var(--acc)}}
+.rarrow svg{width:18px;height:18px}
+.rarrow.pl{left:12px}.rarrow.pr{right:12px}
+.rbar{position:absolute;left:0;right:0;bottom:0;z-index:7;display:flex;align-items:center;gap:10px;padding:24px 14px calc(14px + env(safe-area-inset-bottom));background:linear-gradient(to top,rgba(5,5,6,.92),rgba(5,5,6,0));transition:opacity .3s,transform .3s}
+.rdr.idle .rbar{opacity:0;transform:translateY(10px);pointer-events:none}
+.rdr.mode-v .rbar{display:none}
+.rdr.mode-v .rstage,.rdr.mode-v .rarrow{display:none}
+.pc{font:700 10.5px var(--mono);letter-spacing:.1em;color:var(--mut);min-width:58px;text-align:center;flex:none}
+.chipm{font:700 10px var(--mono);letter-spacing:.12em;color:var(--txt);border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:99px;padding:9px 11px;cursor:pointer;transition:.2s;flex:none}
+.chipm:hover{border-color:var(--acc);color:var(--acc)}
+.ptrack{flex:1;min-width:60px;padding:9px 0;cursor:pointer;touch-action:none}
+.tr{position:relative;height:4px;border-radius:99px;background:rgba(255,255,255,.17)}
+.ptrack:hover .tr{height:6px}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--acc)}
+.knob{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+/* mode vertikal */
+.rscroll{position:absolute;inset:0;overflow-y:auto;display:none;overscroll-behavior:contain}
+.rdr.mode-v .rscroll{display:block}
+.vwrap{max-width:min(760px,100%);margin:0 auto;padding:60px 0 30px;display:flex;flex-direction:column}
+.rdr.wide .vwrap{max-width:100%}
+.vwrap .rpage{width:100%;height:auto;background:#000}
+.vwrap .rpage+.rpage{border-top:1px solid rgba(255,255,255,.05)}
+.vpill{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom));z-index:6;pointer-events:none;font:600 10px var(--mono);letter-spacing:.14em;color:var(--txt);background:rgba(8,8,10,.8);border:1px solid var(--line);border-radius:99px;padding:8px 14px;backdrop-filter:blur(8px)}
+.vfit{position:absolute;right:14px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:6;display:none}
+.rdr.mode-v .vfit{display:block}
+/* akhir chapter */
+.rend{position:relative;margin:26px auto 60px;max-width:420px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:13px;border:1px solid var(--line);border-radius:18px;padding:30px 22px;background:var(--bg2)}
+.rend .rk{font:600 9.5px var(--mono);letter-spacing:.22em;color:var(--acc)}
+.rend h3{font:800 1.4rem var(--disp)}
+.rend p{color:var(--mut);font-size:.85rem}
+.rendov{position:absolute;inset:0;z-index:9;display:grid;place-items:center;padding:20px;background:rgba(5,5,6,.9);backdrop-filter:blur(10px);animation:fadeIn .3s}
+.rendov .rend{margin:0}
+/* sheet chapter */
+.rsheet{position:absolute;inset:0;z-index:10;background:rgba(5,5,6,.55);backdrop-filter:blur(6px);display:flex;flex-direction:column;justify-content:flex-end;animation:fadeIn .25s}
+.rsp{background:var(--bg2);border-top:1px solid var(--line);border-radius:20px 20px 0 0;max-height:74dvh;display:flex;flex-direction:column;animation:shUp .4s cubic-bezier(.2,.9,.3,1)}
+.rsp-h{display:flex;align-items:baseline;gap:10px;padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.rsp-h h3{font:700 1.05rem var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rsp-list{overflow-y:auto;padding:8px 10px calc(16px + env(safe-area-inset-bottom))}
+
+/* ============================================================
+   16. TOAST & FOOTER
+   ============================================================ */
+.toasts{position:fixed;left:50%;bottom:78px;transform:translateX(-50%);z-index:120;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:max-content;max-width:92vw}
+@media(min-width:960px){.toasts{left:auto;right:24px;bottom:24px;transform:none}}
+.toast{display:flex;align-items:center;gap:10px;background:#1B1B21;border:1px solid var(--line);border-radius:99px;padding:11px 17px;font:500 .85rem var(--body);box-shadow:0 14px 36px rgba(0,0,0,.55);animation:tin .35s cubic-bezier(.2,.9,.3,1.3)}
+.toast svg{width:15px;height:15px;color:var(--acc);flex:none}
+.toast.out{animation:tout .3s forwards}
+@keyframes tin{from{opacity:0;transform:translateY(14px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateY(8px)}}
+
+.foot{margin-top:clamp(60px,8vw,100px);border-top:1px solid var(--line);padding:44px 0 calc(96px + env(safe-area-inset-bottom))}
+@media(min-width:960px){.foot{padding-bottom:52px}}
+.fmark{font:800 clamp(3.6rem,15vw,10rem)/.95 var(--disp);letter-spacing:-.04em;color:transparent;-webkit-text-stroke:1px rgba(242,239,232,.13);user-select:none}
+.ftag{margin:16px 0 24px;color:var(--mut);max-width:44ch;font-size:.92rem;line-height:1.65}
+.fmeta{font:500 10px var(--mono);letter-spacing:.14em;color:var(--dim)}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+.rbanner{position:absolute;top:60px;left:50%;transform:translateX(-50%);z-index:6;background:rgba(255,75,51,.14);border:1px solid rgba(255,75,51,.35);color:#FFD9D0;font:600 11px var(--body);letter-spacing:.04em;padding:8px 14px;border-radius:999px;display:flex;gap:10px;align-items:center;max-width:90vw}
+.rblink{background:none;border:0;color:var(--acc);font:inherit;text-decoration:underline;cursor:pointer;padding:0}
+a{color:inherit}
+/* Judul kartu memakai white-space:nowrap; pada grid track `1fr`, auto-minimum
+   track = min-content (lebar judul penuh) -> grid melebar -> overflow-x.
+   Paksa track minmax(0,1fr) + min-width:0 supaya ellipsis tetap bekerja. */
+.bgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+.bgrid .pcard{min-width:0}
+@media(min-width:560px){.bgrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(min-width:960px){.bgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:30px 20px}}
+@media(min-width:1280px){.bgrid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.pcard,.rank,.bcard,.edfeat,.edrow,.edlist,.frow,.srow,.mhero,.edgrid,.hgrid{min-width:0}
+/* .ednote adalah <span> inline: overflow:hidden + ellipsis TIDAK berlaku
+   pada inline box, sehingga white-space:nowrap miliknya bocor keluar dan
+   melebarkan halaman. Jadikan block agar ellipsis benar-benar memotong. */
+.ednote{display:block}
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="hdr" id="hdr">
+  <div class="hdw">
+    <button class="logo" data-action="nav" data-view="home" aria-label="YOMU 18+ — Beranda">YOMU<i></i><span class="age18">18+</span></button>
+    <nav class="hnav" aria-label="Navigasi utama">
+      <button data-action="nav" data-view="home">Beranda</button>
+      <button data-action="nav" data-view="browse">Jelajah</button>
+      <button data-action="nav" data-view="list">Daftar Saya<sup id="navCnt"></sup></button>
+      <a class="hnav-x" href="/baru" aria-label="Buka MIRU (anime)">MIRU ↗</a>
+      <a class="hnav-x" href="/shiro" aria-label="Buka SHIRO (manga biasa)">SHIRO ↗</a>
+    </nav>
+    <button class="icbtn" data-action="open-search" aria-label="Cari manga"><i data-lucide="search"></i></button>
+  </div>
+</header>
+
+<!-- ===================== KONTEN ===================== -->
+<main id="app">
+  <section class="view show" id="view-home" aria-label="Beranda"></section>
+  <section class="view" id="view-browse" aria-label="Jelajah"></section>
+  <section class="view" id="view-list" aria-label="Daftar Saya"></section>
+</main>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="foot">
+  <div class="wrap">
+    <div class="fmark">YOMU</div>
+    <p class="f18"><span class="age18 big">18+</span> Konten manga dewasa. Hanya untuk pembaca 18 tahun ke atas.</p>
+    <p class="ftag">Ruang membaca manga — reader vertikal &amp; per halaman, Bahasa Indonesia, nyaman di mata. Tanpa drama.</p>
+    <p class="fmeta">© 2026 YOMU · MANGA 18+ · DATA DARI nhentai.net · <a href="/baru" style="color:var(--acc);text-decoration:none">MIRU (anime)</a> &middot; <a href="/shiro" style="color:var(--acc);text-decoration:none">SHIRO (manga biasa)</a></p>
+  </div>
+</footer>
+
+<!-- ===================== BOTTOM NAV ===================== -->
+<nav class="bnav" aria-label="Navigasi bawah">
+  <button class="bni on" data-action="nav" data-view="home"><i data-lucide="home"></i><span>Beranda</span></button>
+  <button class="bni" data-action="nav" data-view="browse"><i data-lucide="compass"></i><span>Jelajah</span></button>
+  <button class="bni" data-action="open-search"><i data-lucide="search"></i><span>Cari</span></button>
+  <button class="bni" data-action="nav" data-view="list"><i data-lucide="bookmark"></i><span>Daftar</span><em class="cnt hide" id="bCnt"></em></button>
+</nav>
+
+<div id="searchRoot"></div>
+<div id="modalRoot"></div>
+<div id="readerRoot"></div>
+<div class="toasts" id="toasts"></div>
+
+<script src="https://unpkg.com/lucide@0.462.0/dist/umd/lucide.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   YOMU — data nyata dari nhentai.net (lewat API AnimeHub)
+     GET /api/yomu/list?page=&genre=&q=&sort=   -> katalog
+     GET /api/yomu/gallery?url=                 -> detail gallery
+     GET /api/yomu/pages?url=                   -> semua halaman gambar
+     GET /api/yomu/genres                       -> daftar filter
+   Model: nhentai = 1 gallery berisi banyak halaman (tanpa chapter),
+          jadi tiap judul dipetakan menjadi satu "unit baca".
+   ══════════════════════════════════════════════════════════════ */
+
+/* ---------------------------------------------------------- util dasar */
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const icons=()=>{try{window.lucide&&lucide.createIcons()}catch(e){}};
+const PH="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600">'
+ +'<rect width="400" height="600" fill="#16161c"/>'
+ +'<g fill="#26262e"><rect x="128" y="252" width="144" height="13" rx="6.5"/>'
+ +'<rect x="148" y="284" width="104" height="10" rx="5"/></g>'
+ +'<text x="200" y="336" fill="#3a3a45" font-family="sans-serif" font-size="15" '
+ +'letter-spacing="3" text-anchor="middle">TANPA COVER</text></svg>');
+const fmtN=n=>{n=+n||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.0','')+' jt'
+  :n>=1000?(n/1000).toFixed(n>=10000?0:1).replace('.0','')+' rb':String(n)};
+const fmtAgo=m=>{m=+m||0;return m<1?'baru':m<60?m+'m':m<1440?Math.floor(m/60)+'j'
+  :m<43200?Math.floor(m/1440)+'h':Math.floor(m/43200)+'bl'};
+const cover=m=>(m&&m.thumb)?m.thumb:PH;
+/* fallback global untuk gambar yang gagal dimuat */
+addEventListener('error',e=>{const t=e.target;
+  if(t&&t.tagName==='IMG'&&!t.dataset.fb){t.dataset.fb='1';t.src=PH}},true);
+
+/* ---------------------------------------------------------- lapisan API */
+async function api(path,params){
+  const u=new URL(path,location.origin);
+  Object.entries(params||{}).forEach(([k,v])=>{
+    if(v!==undefined&&v!==null&&v!=='')u.searchParams.set(k,v)});
+  const r=await fetch(u.toString(),{headers:{'Accept':'application/json'}});
+  if(!r.ok)throw new Error('HTTP '+r.status);
+  return r.json();
+}
+function norm(raw){
+  const now=Date.now()/1000;
+  const date=raw.date?+raw.date:null;
+  return {
+    id:String(raw.id),url:raw.url||'',title:raw.title||'',alt:raw.alt||'',
+    author:raw.author||'',category:raw.category||'',lang:raw.lang||'',
+    pages:+raw.pages||0,favorites:+raw.favorites||0,
+    genres:Array.isArray(raw.genres)?raw.genres:[],desc:raw.desc||'',
+    date,thumb:raw.thumb||null,
+    /* alias agar template lama tetap jalan */
+    chapters:1,pop:+raw.favorites||0,
+    upd:date?Math.max(0,Math.round((now-date)/60)):0,
+    year:date?new Date(date*1000).getFullYear():'',
+    status:(raw.category||'').toUpperCase(),
+  };
+}
+
+/* ---------------------------------------------------------- state */
+const LS='yomu_v1';
+const state={
+  view:'home',
+  cache:{},          /* id -> item (persist, dibatasi) */
+  saved:[],          /* [id] */
+  progress:{},       /* id -> {page} */
+  read:new Set(),    /* "id:1" */
+  genre:'',sort:'date',genres:null,
+  hero:{i:0,t:null,featured:[]},
+  modalId:null,searchOpen:false,
+  home:{items:[],popular:[]},
+  browse:{items:[],page:0,max:1,loading:false},
+  reader:{open:false,id:null,item:null,page:1,pages:0,arr:[],src_ok:null,
+          mode:'v',dir:'ltr',wide:false,idleT:null,endShown:false},
+};
+
+function lsLoad(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LS)||'{}')||{};
+    state.cache=d.cache||{};state.saved=d.saved||[];
+    state.progress=d.progress||{};state.read=new Set(d.read||[]);
+    state.genre=d.genre||'';state.sort=d.sort||'date';
+  }catch(e){}
+}
+function lsSave(){
+  try{
+    const keys=Object.keys(state.cache);
+    if(keys.length>400){const keep={};keys.slice(-400).forEach(k=>keep[k]=state.cache[k]);state.cache=keep}
+    localStorage.setItem(LS,JSON.stringify({cache:state.cache,saved:state.saved,
+      progress:state.progress,read:[...state.read],genre:state.genre,sort:state.sort}));
+  }catch(e){}
+}
+function stash(items){items.forEach(m=>{state.cache[m.id]=m});}
+const byId=id=>state.cache[String(id)]||null;
+const isSaved=id=>state.saved.includes(String(id));
+const syncLock=()=>document.body.classList.toggle('locked',state.searchOpen||!!state.modalId||state.reader.open);
+
+function toast(msg,icon='check'){
+  const el=document.createElement('div');el.className='toast';
+  el.innerHTML=`<i data-lucide="${icon}"></i><span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(el);icons();
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),300)},2400);
+}
+function updateBadges(){
+  const n=state.saved.length,nc=$('#navCnt'),bc=$('#bCnt');
+  if(nc){nc.textContent=n||'';nc.style.display=n?'':'none'}
+  if(bc){bc.textContent=n;bc.classList.toggle('hide',!n)}
+}
+
+/* ---------------------------------------------------------- komponen */
+const secHead=(idx,title,railId)=>`
+  <div class="sec-h wrap"><span class="sidx">(${idx})</span><h2 class="stt">${title}</h2><span class="sp"></span>
+  ${railId?`<div class="rarr">
+    <button data-action="rail-l" data-t="${railId}" aria-label="Geser kiri"><i data-lucide="chevron-left"></i></button>
+    <button data-action="rail-r" data-t="${railId}" aria-label="Geser kanan"><i data-lucide="chevron-right"></i></button>
+  </div>`:''}</div>`;
+
+const metaRow=m=>`<div class="mrow">
+  <span class="mr-r"><i data-lucide="heart"></i>${fmtN(m.favorites)}</span>
+  ${m.author?`<span>${esc(m.author)}</span>`:''}
+  <span>${m.pages} HAL</span>
+  ${m.category?`<span class="mr-st">${esc(m.category.toUpperCase())}</span>`:''}
+  <span>${esc(m.genres.slice(0,3).join(' / ')).toUpperCase()}</span></div>`;
+
+function pcard(m,i=0,{bm=false}={}){
+  return `<article class="pcard" data-action="open-detail" data-id="${m.id}" style="--i:${Math.min(i,8)}">
+    <div class="pm">
+      <img class="pimg" loading="lazy" src="${esc(cover(m))}" alt="${esc(m.title)}">
+      ${m.category?`<span class="pbadge">${esc(m.category.toUpperCase())}</span>`:''}
+      ${bm?`<button class="pbm ${isSaved(m.id)?'on':''}" data-action="toggle-list" data-id="${m.id}" aria-label="Tambah ke Daftar Saya"><i data-lucide="bookmark"></i></button>`:''}
+      <button class="pplay" data-action="open-reader" data-id="${m.id}" aria-label="Baca ${esc(m.title)}"><i data-lucide="book-open"></i></button>
+    </div>
+    <h3 class="pt">${esc(m.title)}</h3>
+    <p class="pm2">${m.pages} HAL · ${esc((m.genres[0]||m.category||'').toUpperCase())}</p>
+  </article>`;
+}
+function bcard(m,p,i){
+  const pages=Math.max(1,m.pages||1);
+  const pct=Math.max(2,Math.min(100,Math.round(p.page/pages*100)));
+  return `<article class="bcard" data-action="open-reader" data-id="${m.id}" data-page="${p.page}" style="--i:${i}">
+    <img class="bcimg" loading="lazy" src="${esc(cover(m))}" alt="${esc(m.title)}">
+    <div class="bcin">
+      <h3 class="pt">${esc(m.title)}</h3>
+      <p class="pm2">HAL ${pad(p.page)} / ${pages}</p>
+      <div class="bcb"><span class="bcbar"><i style="width:${pct}%"></i></span><span class="bcpct">${pct}%</span></div>
+    </div>
+  </article>`;
+}
+/* baris "baca" pada modal & sheet reader (nhentai = satu unit) */
+function readRow(m,ctx){
+  const r=state.reader;
+  const isRead=state.read.has(m.id+':1');
+  const isCur=ctx==='reader'?(r.open&&r.id===m.id):state.progress[m.id]!=null;
+  return `<button class="epr ${isCur?'cur':''}" data-action="open-reader" data-id="${m.id}">
+    <span class="en">1</span>
+    <span class="et">Baca Gallery${m.pages?` — ${m.pages} halaman`:''}</span>
+    ${isRead?'<i data-lucide="check" class="eic2 rd"></i>':''}
+    <span class="ed">${ctx==='reader'?'SEKARANG':(m.pages?m.pages+' HAL':'')}</span>
+    <i data-lucide="chevron-right" class="eic2"></i></button>`;
+}
+
+/* ---------------------------------------------------------- BERANDA */
+let homeToken=0;
+async function renderHome(){
+  const tok=++homeToken,v=$('#view-home');
+  v.innerHTML=`<section class="wrap"><div class="ph"><span class="sidx">(MEMUAT)</span>
+    <h1 class="ph-t">YOMU</h1><p class="ph-s">Mengambil katalog dari sumber…</p></div></section>`;
+  icons();
+  try{
+    const [r1,r2]=await Promise.all([
+      api('/api/yomu/list',{page:1,sort:'date'}),
+      api('/api/yomu/list',{sort:'popular'}),
+    ]);
+    if(tok!==homeToken)return;
+    const items=(r1.items||[]).map(norm);
+    const popular=(r2.items||[]).map(norm);
+    stash(items);stash(popular);
+    state.home.items=items;state.home.popular=popular;
+    state.hero.featured=popular.slice(0,5);state.hero.i=0;
+    v.innerHTML=homeHTML(items,popular,state.hero.featured);
+    bindHero();icons();
+  }catch(e){
+    if(tok!==homeToken)return;
+    v.innerHTML=`<section class="wrap"><div class="empty">
+      <span class="eic"><i data-lucide="wifi-off"></i></span>
+      <h3>Gagal memuat data</h3><p>Server sumber tidak merespons. Coba muat ulang halaman.</p>
+      <button class="btn btn-acc" data-action="nav" data-view="home"><i data-lucide="refresh-cw"></i>Coba Lagi</button>
+    </div></section>`;
+    icons();
+  }
+}
+function homeHTML(items,popular,featured){
+  let n=0;
+  const cont=Object.entries(state.progress).map(([id,p])=>({m:byId(id),p})).filter(x=>x.m&&x.p);
+  const feed=items.slice(0,8);
+  const ranked=popular.slice(0,5);
+  const marq=items.slice(0,14).map(m=>`<span>${esc(m.alt||m.title)}</span><b>・</b>`).join('');
+  const ed=popular.slice(0,5);
+  return `
+  <section class="hero" id="hero">
+    <div class="wrap hgrid">
+      <div class="hcopy" id="hCopy">
+        <div class="hkick" id="hKick"></div>
+        <h1 class="htitle" id="hTitle"></h1>
+        <div id="hMeta"></div>
+        <p class="hdesc" id="hDesc"></p>
+        <div class="hcta" id="hCta"></div>
+        <div class="hsegs" id="hSegs">${featured.map((_,i)=>`<button class="seg" data-action="hero-seg" data-i="${i}" aria-label="Sorotan ${i+1}"><i></i></button>`).join('')}</div>
+      </div>
+      <div class="hvis" id="hVis">
+        <button class="hframe" id="hFrame" data-action="open-detail" data-id="">
+          <img id="hImg" src="" alt="">
+          <span class="hbadge" id="hBadge"></span>
+          <span class="hch" id="hCh"></span>
+        </button>
+        <span class="hrom" id="hRom"></span>
+      </div>
+    </div>
+  </section>
+
+  <div class="marq" aria-hidden="true"><div class="marq-in">${marq}${marq}</div></div>
+
+  ${cont.length?`<section class="sec">
+    ${secHead(++n,'Lanjut Baca','r-cont')}
+    <div class="rail" id="r-cont">${cont.map((x,i)=>bcard(x.m,x.p,i)).join('')}</div>
+  </section>`:''}
+
+  <section class="sec wrap">
+    ${secHead(++n,'Baru Ditambahkan')}
+    <div class="feed">${feed.map(m=>`
+      <article class="frow" data-action="open-detail" data-id="${m.id}">
+        <img class="fimg" loading="lazy" src="${esc(cover(m))}" alt="">
+        <div class="fin">
+          <div class="fr1"><h3 class="ft">${esc(m.title)}</h3><span class="fago">${m.pages} HAL</span></div>
+          <div class="fr2">
+            <span class="fst">${m.category?esc(m.category.toUpperCase()):'GALLERY'}</span>
+            <span class="fchs"><button class="fch" data-action="open-reader" data-id="${m.id}">BACA</button></span>
+          </div>
+        </div>
+      </article>`).join('')}
+    </div>
+  </section>
+
+  <section class="sec">
+    ${secHead(++n,'Populer Pekan Ini','r-rank')}
+    <div class="rail" id="r-rank">${ranked.map((m,i)=>`
+      <article class="rank" data-action="open-detail" data-id="${m.id}" style="--i:${i}">
+        <b class="rn" aria-hidden="true">${pad(i+1)}</b>
+        <div class="pm"><img class="pimg" loading="lazy" src="${esc(cover(m))}" alt="${esc(m.title)}"></div>
+        <h3 class="pt">${esc(m.title)}</h3>
+        <p class="pm2">♥ ${fmtN(m.favorites)} · ${esc((m.genres[0]||'').toUpperCase())}</p>
+      </article>`).join('')}
+    </div>
+  </section>
+
+  <section class="sec wrap">
+    ${secHead(++n,'Sorotan')}
+    <div class="edgrid">
+      <button class="edfeat" data-action="open-detail" data-id="${ed[0].id}">
+        <img loading="lazy" src="${esc(cover(ed[0]))}" alt="${esc(ed[0].title)}">
+        <div class="ein">
+          <span class="ekick">SOROTAN · ${esc(ed[0].genres.slice(0,2).join(' / ')).toUpperCase()}</span>
+          <h3 class="et2">${esc(ed[0].title)}</h3>
+          <p class="eq">“${ed[0].pages} halaman · ${fmtN(ed[0].favorites)} favorit${ed[0].author?' · '+esc(ed[0].author):''}”</p>
+          <span class="elink">LIHAT DETAIL <i data-lucide="arrow-up-right"></i></span>
+        </div>
+      </button>
+      <div class="edlist">${ed.slice(1,5).map((m,i)=>`
+        <button class="edrow" data-action="open-detail" data-id="${m.id}">
+          <span class="edn">${pad(i+2)}</span>
+          <img class="edth" loading="lazy" src="${esc(cover(m))}" alt="">
+          <span class="edtx"><span class="edt">${esc(m.title)}</span><span class="ednote">${m.pages} halaman · ${fmtN(m.favorites)} favorit</span></span>
+          <i data-lucide="chevron-right" class="edch"></i>
+        </button>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  <section class="sec">
+    ${secHead(++n,'Katalog Terbaru','r-new')}
+    <div class="rail" id="r-new">${items.slice(0,14).map((m,i)=>pcard(m,i)).join('')}</div>
+  </section>`;
+}
+
+/* --- hero rotator --- */
+function heroFill(i){
+  const F=state.hero.featured;if(!F.length)return;
+  const m=F[i],pr=state.progress[m.id],inl=isSaved(m.id);
+  $('#hKick').innerHTML=`<b class="live"></b>${m.pages} HALAMAN · ${fmtN(m.favorites)} FAVORIT&nbsp;·&nbsp;${pad(i+1)} / ${pad(F.length)}`;
+  $('#hTitle').textContent=m.title;
+  $('#hMeta').innerHTML=metaRow(m);
+  $('#hDesc').textContent=m.alt||m.genres.join(', ')||m.desc||'';
+  $('#hCta').innerHTML=`
+    <button class="btn btn-acc" data-action="open-reader" data-id="${m.id}" data-page="${pr?pr.page:1}">
+      <i data-lucide="book-open"></i>${pr?'Lanjutkan':'Baca'}</button>
+    <button class="btn ${inl?'btn-on':''}" data-action="toggle-list" data-id="${m.id}">
+      <i data-lucide="${inl?'bookmark-check':'bookmark'}"></i><span class="bml">${inl?'Di Daftarku':'Daftarku'}</span></button>`;
+  $('#hImg').src=cover(m);$('#hImg').alt=m.title;
+  $('#hFrame').dataset.id=m.id;
+  $('#hBadge').innerHTML=m.category?esc(m.category.toUpperCase()):'';
+  $('#hCh').textContent=`${m.pages} HALAMAN`;
+  $('#hRom').textContent=m.alt||'';
+  icons();
+  ['#hCopy','#hVis'].forEach(s=>{const el=$(s);if(!el)return;el.classList.remove('swap');void el.offsetWidth;el.classList.add('swap')});
+  $$('#hSegs .seg').forEach((s,k)=>{s.classList.remove('act','done');if(k<i)s.classList.add('done');if(k===i){void s.offsetWidth;s.classList.add('act')}});
+}
+function bindHero(){
+  const h=$('#hero');if(!h)return;
+  heroFill(0);startHero();
+  h.addEventListener('mouseenter',stopHero);
+  h.addEventListener('mouseleave',resyncHero);
+}
+function heroGo(i){state.hero.i=(i+state.hero.featured.length)%state.hero.featured.length;heroFill(state.hero.i)}
+function startHero(){stopHero();if(state.hero.featured.length>1)state.hero.t=setInterval(()=>heroGo(state.hero.i+1),7000)}
+function stopHero(){clearInterval(state.hero.t)}
+function resyncHero(){
+  const i=state.hero.i;
+  $$('#hSegs .seg').forEach((s,k)=>{s.classList.remove('act');if(k===i){void s.offsetWidth;s.classList.add('act')}});
+  if(state.view==='home')startHero();
+}
+
+/* ---------------------------------------------------------- JELAJAH */
+async function renderBrowse(reset=true){
+  const v=$('#view-browse');
+  if(reset){state.browse={items:[],page:0,max:1,loading:false}}
+  if(!state.genres){
+    try{const g=await api('/api/yomu/genres');state.genres=g.genres||[]}catch(e){state.genres=[]}
+  }
+  if(reset){
+    const chips=[{slug:'',name:'Semua'},...state.genres];
+    const gname=(state.genres.find(g=>g.slug===state.genre)||{}).name||'Semua';
+    v.innerHTML=`<section class="wrap">
+      <div class="ph"><span class="sidx">(KATALOG)</span><h1 class="ph-t">Jelajah</h1><p class="ph-s" id="bCount">MEMUAT…</p></div>
+      <div class="chips">${chips.map(c=>`<button class="chip ${c.slug===state.genre?'on':''}" data-action="genre" data-g="${esc(c.slug)}">${esc(c.name)}</button>`).join('')}</div>
+      <div class="brow">
+        <span class="bcount" id="bLabel">${esc(gname.toUpperCase())}</span>
+        <label class="selw">URUT<select id="sortSel" class="sel">
+          <option value="date">Terbaru</option><option value="popular">Populer</option>
+        </select></label>
+      </div>
+      <div class="bgrid" id="bGrid"></div>
+      <div id="bMore" style="text-align:center;margin:26px 0"></div>
+    </section>`;
+    $('#sortSel').value=state.sort;
+    $('#sortSel').addEventListener('change',e=>{state.sort=e.target.value;lsSave();renderBrowse(true)});
+    icons();
+  }
+  await browseLoad();
+}
+async function browseLoad(){
+  const b=state.browse;if(b.loading||(b.page>=b.max&&b.page>0))return;
+  b.loading=true;renderBrowseGrid();
+  try{
+    const d=await api('/api/yomu/list',{page:b.page+1,genre:state.genre,sort:state.sort});
+    const items=(d.items||[]).map(norm);stash(items);
+    b.items=b.items.concat(items);b.page=d.page||(b.page+1);b.max=d.max_page||b.page;
+  }catch(e){toast('Gagal memuat katalog','info')}
+  b.loading=false;renderBrowseGrid();
+}
+function renderBrowseGrid(){
+  const b=state.browse,g=$('#bGrid');if(!g)return;
+  g.innerHTML=b.items.map((m,i)=>pcard(m,i,{bm:true})).join('')
+    ||`<div class="empty" style="grid-column:1/-1"><span class="eic"><i data-lucide="search-x"></i></span>
+       <h3>Tak ada hasil</h3><p>Coba pilih filter lain.</p></div>`;
+  const bc=$('#bCount');if(bc)bc.textContent=`${b.items.length} JUDUL DIMUAT`;
+  const more=$('#bMore');
+  if(more){
+    if(b.loading)more.innerHTML=`<button class="btn" disabled><i data-lucide="loader"></i>Memuat…</button>`;
+    else if(b.page<b.max)more.innerHTML=`<button class="btn" data-action="browse-more"><i data-lucide="chevron-down"></i>Muat Lebih Banyak</button>`;
+    else more.innerHTML=`<p class="pm2" style="opacity:.6">— akhir katalog —</p>`;
+  }
+  icons();
+}
+
+/* ---------------------------------------------------------- DAFTAR SAYA */
+function renderList(){
+  const ids=[...state.saved].reverse();
+  const items=ids.map(byId).filter(Boolean);
+  $('#view-list').innerHTML=`<section class="wrap">
+    <div class="ph"><span class="sidx">(KOLEKSI)</span><h1 class="ph-t">Daftar Saya</h1><p class="ph-s">${items.length} JUDUL TERSIMPAN</p></div>
+    ${items.length
+      ?`<div class="bgrid" style="margin-top:18px">${items.map((m,i)=>pcard(m,i,{bm:true})).join('')}</div>`
+      :`<div class="empty">
+          <span class="eic"><i data-lucide="bookmark"></i></span>
+          <h3>Belum ada judul</h3>
+          <p>Simpan judul favoritmu lewat ikon pita pada poster, lalu kembali ke sini.</p>
+          <button class="btn btn-acc" data-action="nav" data-view="browse"><i data-lucide="compass"></i>Jelajah Katalog</button>
+        </div>`}
+  </section>`;
+  icons();
+}
+
+/* ---------------------------------------------------------- MODAL DETAIL */
+async function openModal(id){
+  id=String(id);state.modalId=id;
+  const c=byId(id);
+  renderModal(c,true);
+  try{
+    const url=c&&c.url;if(!url)return;
+    const d=await api('/api/yomu/gallery',{url});
+    const raw=d.gallery;if(!raw)return;
+    const m=norm(raw);stash([m]);lsSave();
+    if(state.modalId!==id)return;
+    renderModal(m,false);
+  }catch(e){}
+}
+function renderModal(m,loading){
+  if(!m){
+    if(loading){$('#modalRoot').innerHTML=`<div class="ovl"><div class="mback"></div>
+      <div class="sheet"><div style="padding:40px;text-align:center"><i data-lucide="loader"></i></div></div></div>`;icons();}
+    return;
+  }
+  const inl=isSaved(m.id),pr=state.progress[m.id];
+  const sub=[m.alt,m.author].filter(Boolean).join(' · ');
+  $('#modalRoot').innerHTML=`
+  <div class="ovl" data-action="close-modal-back">
+    <div class="mback"></div>
+    <div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(m.title)}">
+      <button class="mx" data-action="close-modal" aria-label="Tutup"><i data-lucide="x"></i></button>
+      <div class="mhero">
+        <div class="mp"><img src="${esc(cover(m))}" alt="${esc(m.title)}"></div>
+        <div>
+          <span class="mkick">${esc(sub.toUpperCase())}</span>
+          <h2 class="mt">${esc(m.title)}</h2>
+          ${metaRow(m)}
+          <div class="mgens">${m.genres.slice(0,10).map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</div>
+          <p class="mdesc">${esc(m.desc||m.alt||'')}</p>
+          ${loading?`<p class="pm2" style="opacity:.55;margin-top:6px">Memuat detail…</p>`:''}
+          <div class="mcta">
+            <button class="btn btn-acc" data-action="open-reader" data-id="${m.id}" data-page="${pr?pr.page:1}">
+              <i data-lucide="book-open"></i>${pr?'Lanjutkan':'Baca'}</button>
+            <button class="btn ${inl?'btn-on':''}" data-action="toggle-list" data-id="${m.id}">
+              <i data-lucide="${inl?'bookmark-check':'bookmark'}"></i><span class="bml">${inl?'Di Daftarku':'Daftarku'}</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="meps">
+        <div class="meps-h"><span class="sidx">(BACA)</span><h3>Mulai Membaca</h3><span class="mcnt">${m.pages} HALAMAN${m.date?' · '+fmtAgo(m.upd).toUpperCase()+' LALU':''}</span></div>
+        <div class="eplist">${readRow(m,'modal')}</div>
+      </div>
+    </div>
+  </div>`;
+  syncLock();icons();
+}
+function closeModal(){state.modalId=null;$('#modalRoot').innerHTML='';syncLock()}
+
+/* ---------------------------------------------------------- READER */
+let swiped=false;
+
+async function openReader(id,page=1){
+  id=String(id);
+  const r=state.reader;
+  const c=byId(id);
+  if(!c){toast('Data judul tidak ditemukan','info');return}
+  clearTimeout(r.idleT);
+  Object.assign(r,{open:true,id,item:c,page:1,pages:0,arr:[],src_ok:null,
+    endShown:false,mode:r.mode||'v',dir:'ltr',wide:false});
+  if(state.searchOpen)closeSearch();
+  buildReader();syncLock();
+  try{
+    const d=await api('/api/yomu/pages',{url:c.url});
+    if(!r.open||r.id!==id)return;
+    r.arr=d.images||[];r.pages=r.arr.length;r.src_ok=d.src_ok;
+    r.page=Math.min(Math.max(1,page),Math.max(1,r.pages));
+    buildReader();
+  }catch(e){
+    if(r.open&&r.id===id){r.pages=0;buildReader();toast('Gagal memuat halaman','info')}
+  }
+}
+const pageUrl=k=>state.reader.arr[k-1]||PH;
+
+function buildReader(){
+  const r=state.reader,m=r.item;
+  const title=m?m.title:'Memuat…';
+  const inl=m?isSaved(m.id):false;
+  let mid='';
+  if(r.pages===0){
+    mid=`<div class="rstage"><div style="text-align:center;color:var(--mut)">
+      <i data-lucide="loader" style="width:26px;height:26px"></i>
+      <p style="margin-top:12px;font:500 12px var(--mono);letter-spacing:.14em">MEMUAT HALAMAN…</p></div></div>`;
+  }else if(r.mode==='p'){
+    mid=`<div class="rstage" id="rstage">
+      <img class="rpage" id="rImg" src="${pageUrl(r.page)}" alt="Halaman ${r.page}">
+      <div class="zones">
+        <div class="zone" data-action="r-zl"></div>
+        <div class="zone" data-action="r-zc"></div>
+        <div class="zone" data-action="r-zr"></div>
+      </div>
+      <button class="rarrow pl" data-action="r-al" aria-label="Sebelumnya"><i data-lucide="chevron-left"></i></button>
+      <button class="rarrow pr" data-action="r-ar" aria-label="Berikutnya"><i data-lucide="chevron-right"></i></button>
+    </div>`;
+  }else{
+    let imgs='';
+    for(let k=1;k<=r.pages;k++)imgs+=`<img class="rpage" data-n="${k}" loading="${k<=2?'eager':'lazy'}" src="${pageUrl(k)}" alt="Halaman ${k}">`;
+    mid=`<div class="rscroll" id="rscroll"><div class="vwrap">${imgs}${endPanelHTML('flow')}</div></div>
+    <button class="chipm vfit" data-action="r-fit">${r.wide?'LEBAR':'SEDANG'}</button>`;
+  }
+  const banner=(r.pages>0&&r.src_ok===false)?`<div class="rbanner" id="rbanner">
+    Gambar sumber sedang tidak tersedia. <button class="rblink" data-action="r-reload">Coba lagi</button></div>`:'';
+  $('#readerRoot').innerHTML=`<div class="rdr ${r.mode==='v'?'mode-v':'mode-p'} ${r.wide?'wide':''}" id="rdr">
+    <div class="rprog"><i id="rFill"></i></div>
+    <div class="rtop">
+      <button class="ic" data-action="close-reader" aria-label="Kembali"><i data-lucide="chevron-left"></i></button>
+      <button class="rinfo" data-action="r-detail" aria-label="Detail">
+        <b>${esc(title)}</b><span id="rInfo">${r.pages?`${r.pages} HAL · ${r.mode==='p'?'HALAMAN':'VERTIKAL'}`:'MEMUAT…'}</span>
+      </button>
+      <button class="ic ${inl?'ic-on':''}" id="rBm" data-action="r-bm" aria-label="Daftar Saya"><i data-lucide="${inl?'bookmark-check':'bookmark'}"></i></button>
+      <button class="ic" data-action="r-mode" aria-label="Ganti mode baca" title="Ganti mode baca"><i data-lucide="${r.mode==='p'?'gallery-vertical':'book-open'}"></i></button>
+    </div>
+    ${banner}
+    ${mid}
+    <span class="vpill" id="vpill">HAL ${pad(r.page)} / ${r.pages||'?'}</span>
+    ${r.pages>0&&r.mode==='p'?`<div class="rbar">
+      <button class="ic" data-action="r-prev" aria-label="Halaman sebelumnya"><i data-lucide="chevron-left"></i></button>
+      <span class="pc" id="rPc">${pad(r.page)} / ${r.pages}</span>
+      <div class="ptrack" id="rTrack"><div class="tr"><i class="fill" id="rTf"></i><b class="knob" id="rTk"></b></div></div>
+      <button class="chipm" data-action="r-dir">${r.dir.toUpperCase()}</button>
+      <button class="ic" data-action="r-next" aria-label="Halaman berikutnya"><i data-lucide="chevron-right"></i></button>
+    </div>`:''}
+    ${r.mode==='p'&&r.endShown?`<div class="rendov" id="rendov">${endPanelHTML('ov')}</div>`:''}
+  </div>`;
+  if(r.pages>0)bindReader();
+  rUpd();if(r.mode==='p'&&r.pages>0)armIdle();icons();
+}
+function endPanelHTML(kind){
+  const r=state.reader,m=r.item,last=true;
+  return `<div class="rend">
+    ${kind==='ov'?'<button class="mx" data-action="r-end-close" aria-label="Tutup"><i data-lucide="x"></i></button>':''}
+    <span class="rk">— SELESAI —</span>
+    <h3>${r.pages} halaman terbaca</h3>
+    <p>${esc(m?m.title:'')}</p>
+    <div class="hcta">
+      <button class="btn btn-acc" data-action="r-top"><i data-lucide="arrow-up"></i>Kembali ke Atas</button>
+      <button class="btn" data-action="r-detail"><i data-lucide="list"></i>Detail</button>
+    </div>
+  </div>`;
+}
+function bindReader(){
+  const r=state.reader,rdr=$('#rdr');if(!rdr)return;
+  if(r.mode==='p'){
+    const stage=$('#rstage');
+    if(stage){
+      stage.addEventListener('click',e=>{if(swiped){e.stopPropagation();swiped=false}},true);
+      let sx=0;
+      stage.addEventListener('pointerdown',e=>{sx=e.clientX});
+      stage.addEventListener('pointerup',e=>{
+        const dx=e.clientX-sx;
+        if(Math.abs(dx)>48){
+          swiped=true;const left=dx<0;
+          if(r.dir==='rtl')left?prevPage():nextPage();else left?nextPage():prevPage();
+        }
+      });
+    }
+    const track=$('#rTrack');
+    if(track){
+      const seek=e=>{const b=track.getBoundingClientRect();
+        const f=Math.min(1,Math.max(0,(e.clientX-b.left)/b.width));
+        setPage(Math.round(f*(r.pages-1))+1);armIdle();};
+      track.addEventListener('pointerdown',e=>{
+        track.setPointerCapture(e.pointerId);seek(e);
+        const mv=ev=>seek(ev);
+        track.addEventListener('pointermove',mv);
+        track.addEventListener('pointerup',()=>track.removeEventListener('pointermove',mv),{once:true});
+      });
+    }
+  }else{
+    const sc=$('#rscroll');
+    if(sc){
+      let lastY=0,raf=false;
+      sc.addEventListener('scroll',()=>{
+        if(raf)return;raf=true;
+        requestAnimationFrame(()=>{
+          raf=false;
+          const y=sc.scrollTop;
+          rdr.classList.toggle('idle',y>lastY+6&&y>90);
+          if(y<lastY-6)rdr.classList.remove('idle');
+          lastY=y;vTrack();
+        });
+      },{passive:true});
+      if(r.page>1){const el=sc.querySelector(`.rpage[data-n="${r.page}"]`);if(el)sc.scrollTop=el.offsetTop-56}
+    }
+  }
+  rdr.addEventListener('pointermove',()=>{
+    if(r.mode==='p'&&rdr.classList.contains('idle'))rdr.classList.remove('idle');
+    if(r.mode==='p')armIdle();
+  });
+  const ov=$('#rendov');
+  ov&&ov.addEventListener('click',e=>{if(e.target===ov){r.endShown=false;buildReader()}});
+}
+function armIdle(){
+  const r=state.reader;clearTimeout(r.idleT);
+  r.idleT=setTimeout(()=>$('#rdr')?.classList.add('idle'),2600);
+}
+function rUpd(){
+  const r=state.reader,rdr=$('#rdr');if(!rdr||!r.pages)return;
+  if(r.mode==='p'){
+    const f=r.pages>1?((r.page-1)/(r.pages-1))*100:100;
+    const tf=$('#rTf'),tk=$('#rTk'),pc=$('#rPc');
+    if(tf)tf.style.width=f+'%';if(tk)tk.style.left=f+'%';
+    if(pc)pc.textContent=`${pad(r.page)} / ${r.pages}`;
+  }
+  const fill=$('#rFill');if(fill)fill.style.width=(r.page/r.pages*100)+'%';
+  const info=$('#rInfo');if(info)info.textContent=`${r.pages} HAL · ${r.mode==='p'?'HALAMAN':'VERTIKAL'}`;
+  const pill=$('#vpill');if(pill)pill.textContent=`HAL ${pad(r.page)} / ${r.pages}`;
+}
+function setPage(n){
+  const r=state.reader;
+  r.page=Math.min(r.pages,Math.max(1,n));
+  const im=$('#rImg');if(im)im.src=pageUrl(r.page);
+  rUpd();saveProgress();
+  const nx=new Image();nx.src=pageUrl(Math.min(r.pages,r.page+1));
+}
+function nextPage(){
+  const r=state.reader;
+  if(r.page>=r.pages){showEnd();return}
+  setPage(r.page+1);
+}
+function prevPage(){
+  const r=state.reader;
+  if(r.page<=1){toast('Ini halaman pertama','info');return}
+  setPage(r.page-1);
+}
+function zone(side){
+  const r=state.reader;
+  if(side==='c'){
+    const el=$('#rdr');
+    if(el.classList.contains('idle')){el.classList.remove('idle');armIdle()}
+    else{el.classList.add('idle');clearTimeout(r.idleT)}
+    return;
+  }
+  let fwd=side==='r';
+  if(r.dir==='rtl')fwd=!fwd;
+  fwd?nextPage():prevPage();armIdle();
+}
+function showEnd(){
+  const r=state.reader;
+  if(r.endShown)return;
+  markRead();r.endShown=true;
+  if(r.mode==='p'){const d=$('#rdr');d.insertAdjacentHTML('beforeend',`<div class="rendov" id="rendov">${endPanelHTML('ov')}</div>`);
+    const ov=$('#rendov');ov.addEventListener('click',e=>{if(e.target===ov){r.endShown=false;buildReader()}});icons();}
+}
+function markRead(){const r=state.reader;if(r.id)state.read.add(r.id+':1');lsSave()}
+function saveProgress(){
+  const r=state.reader;if(!r.open||!r.id)return;
+  state.progress[r.id]={page:r.page};lsSave();
+}
+function closeReader(){
+  const r=state.reader;
+  clearTimeout(r.idleT);
+  if(r.pages&&r.page>=r.pages)markRead();
+  saveProgress();
+  r.open=false;r.id=null;r.item=null;r.arr=[];r.pages=0;
+  $('#readerRoot').innerHTML='';syncLock();
+  if(state.view==='home')renderHome();
+  else if(state.view==='list')renderList();
+}
+function vTrack(){
+  const r=state.reader,sc=$('#rscroll');if(!sc||r.mode!=='v')return;
+  const mid=sc.scrollTop+sc.clientHeight*.45;
+  let cur=1;
+  sc.querySelectorAll('.rpage').forEach(im=>{if(im.offsetTop+im.offsetHeight/2<=mid)cur=+im.dataset.n});
+  r.page=cur;
+  if(cur===r.pages&&!r.endShown){r.endShown=true;markRead()}
+  const fill=$('#rFill');if(fill)fill.style.width=(cur/r.pages*100)+'%';
+  const pill=$('#vpill');if(pill)pill.textContent=`HAL ${pad(cur)} / ${r.pages}`;
+  saveProgress();
+}
+
+/* ---------------------------------------------------------- PENCARIAN */
+function openSearch(){
+  state.searchOpen=true;syncLock();
+  $('#searchRoot').innerHTML=`<div class="srch"><div class="sw">
+    <div class="sbox">
+      <i data-lucide="search"></i>
+      <input id="sIn" type="text" placeholder="Cari judul, tag, atau genre…" autocomplete="off">
+      <button class="scl" data-action="close-search" aria-label="Tutup pencarian"><i data-lucide="x"></i></button>
+    </div>
+    <div id="sOut"></div>
+  </div></div>`;
+  icons();$('#sIn').focus();
+  let timer=null;
+  $('#sIn').addEventListener('input',e=>{
+    const q=e.target.value;clearTimeout(timer);
+    sResults(q,true);
+    timer=setTimeout(()=>sResults(q,false),320);
+  });
+  $('#sIn').addEventListener('keydown',e=>{if(e.key==='Enter'){const f=$('#sOut .srow');if(f)f.click()}});
+  sResults('',false);
+}
+function closeSearch(){state.searchOpen=false;$('#searchRoot').innerHTML='';syncLock()}
+let sToken=0;
+async function sResults(q,quick){
+  const tok=++sToken;
+  const row=m=>`<button class="srow" data-action="s-open" data-id="${m.id}">
+    <img loading="lazy" src="${esc(cover(m))}" alt="">
+    <span class="srt">${esc(m.title)}</span>
+    <span class="srm">${m.pages} HAL · ${esc((m.author||m.category||'').toUpperCase())} · ${esc(m.genres.slice(0,3).join(' / ')).toUpperCase()}</span>
+    <i data-lucide="arrow-up-right"></i></button>`;
+  q=(q||'').trim();
+  if(!q){
+    const pop=state.home.popular.length?state.home.popular:state.home.items;
+    $('#sOut').innerHTML=`<p class="slabel">POPULER</p>`+pop.slice(0,5).map(row).join('');
+    icons();return;
+  }
+  // tampilkan hasil lokal secepatnya
+  if(quick){
+    const ql=q.toLowerCase();
+    const local=Object.values(state.cache).filter(m=>
+      (m.title+' '+m.alt+' '+m.author+' '+m.genres.join(' ')).toLowerCase().includes(ql)).slice(0,8);
+    if(local.length){$('#sOut').innerHTML=`<p class="slabel">SARAN</p>`+local.map(row).join('');icons();}
+    return;
+  }
+  $('#sOut').innerHTML=`<p class="slabel">MENCARI “${esc(q.toUpperCase())}”…</p>`;
+  try{
+    const d=await api('/api/yomu/list',{q});
+    if(tok!==sToken)return;
+    const items=(d.items||[]).map(norm);stash(items);
+    $('#sOut').innerHTML=items.length
+      ?`<p class="slabel">${items.length} HASIL UNTUK “${esc(q.toUpperCase())}”</p>`+items.map(row).join('')
+      :`<div class="sempty"><span class="eic"><i data-lucide="search-x"></i></span>
+         <h3>Tak ada hasil untuk “${esc(q)}”</h3><p>Coba kata kunci lain, misalnya “milf”, “schoolgirl”, atau nama artist.</p></div>`;
+  }catch(e){
+    if(tok!==sToken)return;
+    $('#sOut').innerHTML=`<div class="sempty"><span class="eic"><i data-lucide="wifi-off"></i></span>
+      <h3>Gagal mencari</h3><p>Server tidak merespons.</p></div>`;
+  }
+  icons();
+}
+
+/* ---------------------------------------------------------- ROUTER & AKSI */
+function go(view){
+  state.view=view;stopHero();
+  $$('.view').forEach(s=>s.classList.toggle('show',s.id==='view-'+view));
+  if(view==='home')renderHome();
+  else if(view==='browse')renderBrowse(true);
+  else if(view==='list')renderList();
+  window.scrollTo({top:0});
+  $$('.hnav [data-view], .bnav [data-view]').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+}
+function toggleList(id){
+  id=String(id);
+  const i=state.saved.indexOf(id),had=i>=0;
+  if(had)state.saved.splice(i,1);else state.saved.push(id);
+  lsSave();updateBadges();
+  toast(had?'Dihapus dari Daftar Saya':'Ditambahkan ke Daftar Saya',had?'bookmark':'bookmark-check');
+  $$(`[data-action="toggle-list"][data-id="${id}"]`).forEach(b=>{
+    const on=!had;
+    b.classList.toggle('on',on);b.classList.toggle('btn-on',on);
+    const bml=b.querySelector('.bml');
+    b.innerHTML=`<i data-lucide="${on?'bookmark-check':'bookmark'}"></i>${bml?`<span class="bml">${on?'Di Daftarku':'Daftarku'}</span>`:''}`;
+  });
+  icons();
+  if(state.view==='list')renderList();
+}
+const railScroll=(id,dir)=>{const r=$('#'+id);r&&r.scrollBy({left:r.clientWidth*.8*dir,behavior:'smooth'})};
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-action]');if(!t)return;
+  const id=t.dataset.id;
+  switch(t.dataset.action){
+    case 'nav':          stopHero();go(t.dataset.view);break;
+    case 'open-search':  openSearch();break;
+    case 'close-search': closeSearch();break;
+    case 's-open':       closeSearch();openModal(id);break;
+    case 'open-detail':  openModal(id);break;
+    case 'close-modal':  closeModal();break;
+    case 'close-modal-back': if(e.target.classList.contains('mback'))closeModal();break;
+    case 'toggle-list':  toggleList(id);break;
+    case 'hero-seg':     heroGo(+t.dataset.i);startHero();break;
+    case 'rail-l':       railScroll(t.dataset.t,-1);break;
+    case 'rail-r':       railScroll(t.dataset.t,1);break;
+    case 'genre':        state.genre=t.dataset.g;lsSave();renderBrowse(true);break;
+    case 'browse-more':  browseLoad();break;
+    case 'open-reader':  openReader(id,+(t.dataset.page||1));break;
+    case 'r-top':{const sc=$('#rscroll');if(sc)sc.scrollTo({top:0,behavior:'smooth'});break}
+    case 'close-reader': closeReader();break;
+    case 'r-reload':{const r=state.reader;if(!r.id)break;const url=(r.item||{}).url;
+      toast('Memuat ulang…','refresh-cw');
+      api('/api/yomu/pages',{url,fresh:1}).then(d=>{
+        r.arr=d.images||[];r.pages=r.arr.length;r.src_ok=d.src_ok;buildReader();
+      }).catch(()=>toast('Sumber masih belum pulih','info'));
+      break}
+    case 'r-mode':{const r=state.reader;r.mode=r.mode==='p'?'v':'p';buildReader();break}
+    case 'r-dir':{const r=state.reader;r.dir=r.dir==='rtl'?'ltr':'rtl';buildReader();
+      toast(r.dir==='rtl'?'Arah baca: Kanan → Kiri':'Arah baca: Kiri → Kanan','book-open');break}
+    case 'r-fit':{const r=state.reader;r.wide=!r.wide;buildReader();break}
+    case 'r-zl': zone('l');break;
+    case 'r-zc': zone('c');break;
+    case 'r-zr': zone('r');break;
+    case 'r-al': zone(state.reader.dir==='rtl'?'r':'l');break;
+    case 'r-ar': zone(state.reader.dir==='rtl'?'l':'r');break;
+    case 'r-prev': prevPage();break;
+    case 'r-next': nextPage();break;
+    case 'r-bm':{const rid=state.reader.id;toggleList(rid);
+      const b=$('#rBm');b&&(b.innerHTML=`<i data-lucide="${isSaved(rid)?'bookmark-check':'bookmark'}"></i>`,icons());break}
+    case 'r-detail':{const rid=state.reader.id;closeReader();openModal(rid);break}
+    case 'r-end-close':{state.reader.endShown=false;buildReader();break}
+  }
+});
+document.addEventListener('keydown',e=>{
+  const r=state.reader;
+  if(r.open){
+    if(e.key==='Escape'){closeReader();return}
+    if(e.key==='ArrowRight')r.dir==='rtl'?prevPage():nextPage();
+    else if(e.key==='ArrowLeft')r.dir==='rtl'?nextPage():prevPage();
+    else if(e.key===' '){e.preventDefault();nextPage()}
+    return;
+  }
+  if(e.key==='Escape'){
+    if(state.modalId)closeModal();
+    else if(state.searchOpen)closeSearch();
+  }
+});
+addEventListener('scroll',()=>$('#hdr').classList.toggle('sc',scrollY>10),{passive:true});
+
+/* ---------------------------------------------------------- init */
+lsLoad();
+updateBadges();
+go('home');
+setTimeout(icons,60);
+</script>
+
+</body>
+</html>
