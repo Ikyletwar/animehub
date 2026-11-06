@@ -654,7 +654,213 @@ const pad = n => String(n).padStart(2, '0');
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const icons = () => { try { window.lucide && lucide.createIcons(); } catch (e) {} };
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return pad(Math.floor(s / 60)) + ':' + pad(s % 60); };
-const api = async (u, o) => { const r = await fetch(u, o); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
+const apiNet = async (u, o) => { const r = await fetch(u, o); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); };
+
+/* ── MIRU live: scrape langsung lewat proxy tepi /ott ──────────────
+   Fungsi Netlify tidak bisa menjangkau otakudesu.blog (Cloudflare),
+   jadi detail, stream, thumb, genre dan pencarian jarak jauh dibaca
+   dari HTML yang diproksikan oleh edge Netlify (netlify.toml). */
+const OTT = 'https://otakudesu.blog';
+const ottRel = u => String(u || '').replace(/^https?:\/\/otakudesu\.blog\/?/, '');
+const ottGet = async (p, o) => {
+  const c = new AbortController(), tm = setTimeout(() => c.abort(), 25000);
+  try {
+    const r = await fetch('/ott/' + String(p || '').replace(/^\/+/, ''),
+      Object.assign({ signal: c.signal, credentials: 'omit' }, o || {}));
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return await r.text();
+  } finally { clearTimeout(tm); }
+};
+const ottDom = async (p, o) => new DOMParser().parseFromString(await ottGet(p, o), 'text/html');
+const mtxt = el => (el && el.textContent ? el.textContent : '').replace(/\s+/g, ' ').trim();
+const deSubTxt = s => String(s || '').replace(/\s*Sub\s*Indo\s*$/i, '').trim();
+const absOtt = h => { try { return new URL(h, OTT).href; } catch (e) { return h; } };
+/* desustream memasang CSP frame-ancestors; sajikan lewat domain sendiri */
+const fixEmbed = u => {
+  const s = String(u || '').replace(/^https?:\/\/desustream\.(?:net|info|me|com)\//i, '/dst/');
+  if (s.indexOf('/dst/') !== 0) return s;
+  return s + (s.indexOf('?') >= 0 ? '&' : '?') + 'v=2';
+};
+const miruCache = new Map();
+const miruMemo = async (k, fn) => {
+  if (miruCache.has(k)) return miruCache.get(k);
+  const v = await fn(); miruCache.set(k, v); return v;
+};
+
+const miruDetail = (url) => miruMemo('d:' + url, async () => {
+  if (!url || !url.startsWith(OTT)) return { anime: null, episodes: [], batch: [] };
+  const doc = await ottDom(ottRel(url));
+  const img = doc.querySelector('.fotoanime img');
+  const genres = [...doc.querySelectorAll(".infozingle a[href*='/genres/']")].map(a => mtxt(a)).filter(Boolean);
+  const info = {};
+  doc.querySelectorAll('.infozingle p').forEach(p => {
+    const s = mtxt(p), i = s.indexOf(':');
+    if (i > 0) info[s.slice(0, i).trim().toLowerCase()] = s.slice(i + 1).trim();
+  });
+  const anime = {
+    title: deSubTxt(mtxt(doc.querySelector('.jdlrx h1'))),
+    url,
+    thumb: img ? (img.getAttribute('data-src') || img.getAttribute('src') || '').trim() || null : null,
+    srcset: img ? img.getAttribute('srcset') || null : null,
+    genres,
+    status: info.status || null,
+    typ: info.tipe || null,
+    total_ep: info['total episode'] || null,
+    score: info.skor || null,
+    synopsis: mtxt(doc.querySelector('.sinopc')) || null,
+    aspect: '225/319'
+  };
+  const eps = [], batch = [], seen = new Set();
+  doc.querySelectorAll('.episodelist ul li').forEach(li => {
+    const a = li.querySelector('a[href]'); if (!a) return;
+    const href = a.getAttribute('href'); if (!href) return;
+    const abs = absOtt(href); if (seen.has(abs)) return; seen.add(abs);
+    const label = deSubTxt(mtxt(a));
+    const item = { label, url: abs, date: mtxt(li.querySelector('span.zeebr')) || null };
+    if (abs.includes('/batch/') || /batch/i.test(label)) batch.push(item); else eps.push(item);
+  });
+  if (!anime.total_ep || !/^\d+$/.test(String(anime.total_ep).trim())) anime.total_ep = String(eps.length);
+  return { anime, episodes: eps, batch };
+});
+
+const miruThumb = (url) => miruMemo('t:' + url, async () => {
+  if (!url || !url.startsWith(OTT)) return { thumb: null, srcset: null };
+  const doc = await ottDom(ottRel(url));
+  const im = doc.querySelector('.fotoanime img') || doc.querySelector('.thumb img');
+  let thumb = im ? (im.getAttribute('data-src') || im.getAttribute('src') || '').trim() : '';
+  const srcset = im ? (im.getAttribute('srcset') || '').trim() : '';
+  if (!thumb) { const og = doc.querySelector('meta[property="og:image"]'); thumb = og ? og.getAttribute('content') : ''; }
+  return { thumb: thumb || null, srcset: srcset || null };
+});
+
+const miruNonce = async () => {
+  try {
+    const r = await fetch('/ott/wp-admin/admin-ajax.php', {
+      method: 'POST', credentials: 'omit',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: 'action=aa1208d27f29ca340c92c66d1926f13f'
+    });
+    const j = await r.json(); return j && j.data ? j.data : null;
+  } catch (e) { return null; }
+};
+const miruResolve = async (opt, nonce) => {
+  const body = new URLSearchParams({ id: String(opt.id), i: String(opt.server), q: opt.quality, nonce, action: '2a3505c93b0035d3f455df82bf976b84' }).toString();
+  const r = await fetch('/ott/wp-admin/admin-ajax.php', {
+    method: 'POST', credentials: 'omit',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' }, body
+  });
+  const j = await r.json();
+  let html = '';
+  try { html = atob(String((j && j.data) || '').replace(/^"|"$/g, '')); } catch (e) { html = String((j && j.data) || ''); }
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const ifr = doc.querySelector('iframe[src]');
+  return ifr ? ifr.getAttribute('src') : null;
+};
+
+const miruStream = (ep, q, i) => miruMemo('s:' + ep + '|' + q + '|' + i, async () => {
+  const out = { url: null, kind: null, server: null, embed: null, iframe_only: true, quality: q || '360p', available: [] };
+  if (!ep || !ep.startsWith(OTT)) { out.error = 'URL episode tidak valid.'; return out; }
+  const doc = await ottDom(ottRel(ep));
+  const opts = [];
+  const pf = doc.querySelector('#pembed iframe[src], iframe[src*="desustream"]');
+  if (pf) opts.push({ quality: '360p', server: 0, label: 'desustream', iframe: pf.getAttribute('src') });
+  doc.querySelectorAll('.mirrorstream a[data-content]').forEach(a => {
+    try {
+      const d = JSON.parse(atob(a.getAttribute('data-content')));
+      opts.push({ quality: d.q || '360p', server: d.i || 0, label: mtxt(a) || 'mirror', id: d.id });
+    } catch (e) {}
+  });
+  out.available = opts.map(o => ({ quality: o.quality, server: o.server, label: o.label }));
+  if (!opts.length) { out.error = 'Halaman ini tidak punya pemutar video. Kemungkinan ini link download batch, bukan episode.'; return out; }
+  const cand = opts.filter(o => o.quality === out.quality && (i == null || Number(o.server) === Number(i)));
+  const direct = cand.find(o => o.iframe) || opts.find(o => o.quality === out.quality && o.iframe) || opts.find(o => o.iframe);
+  if (direct && direct.quality === out.quality) {
+    out.embed = fixEmbed(direct.iframe); out.server = direct.label; out.quality = direct.quality; return out;
+  }
+  const nonce = await miruNonce();
+  if (nonce) {
+    for (const o of (cand.length ? cand : opts.filter(o => o.quality === out.quality))) {
+      if (o.id == null) continue;
+      try {
+        const ifr = await miruResolve(o, nonce);
+        if (ifr) { out.embed = fixEmbed(ifr); out.server = o.label; out.quality = o.quality; return out; }
+      } catch (e) {}
+    }
+  }
+  if (direct) { out.embed = fixEmbed(direct.iframe); out.server = direct.label; out.quality = direct.quality; return out; }
+  out.error = 'Mirror tidak dapat dimuat. Coba kualitas atau server lain.';
+  return out;
+});
+
+const miruGenre = (slug, page) => miruMemo('g:' + slug + '|' + page, async () => {
+  if (!/^[a-z0-9-]+$/.test(slug || '')) return [];
+  const p = page > 1 ? `genres/${slug}/page/${page}/` : `genres/${slug}/`;
+  const doc = await ottDom(p);
+  const root = doc.querySelector('.page') || doc;
+  const out = [], seen = new Set();
+  root.querySelectorAll('a[href*="/anime/"]').forEach(a => {
+    const abs = absOtt(a.getAttribute('href') || '');
+    if (!abs || seen.has(abs) || abs.includes('/batch/')) return;
+    seen.add(abs);
+    const img = a.querySelector('img');
+    const title = mtxt(a) || (img ? img.getAttribute('alt') : '') || '';
+    if (title) out.push({ title, url: abs, thumb: img ? img.getAttribute('src') : null, genres: [], aspect: '225/319' });
+  });
+  return out;
+});
+
+const miruSearch = (q) => miruMemo('q:' + String(q || '').toLowerCase(), async () => {
+  if (!q) return [];
+  const doc = await ottDom('?s=' + encodeURIComponent(q) + '&post_type=anime');
+  const out = [];
+  doc.querySelectorAll('ul.chivsrc li').forEach(li => {
+    const a = li.querySelector('h2 a[href]'); if (!a) return;
+    const img = li.querySelector('img');
+    let genres = [], status = null, score = null;
+    li.querySelectorAll('div.set').forEach(s => {
+      const t = mtxt(s), low = t.toLowerCase();
+      if (low.startsWith('genres') && t.includes(':')) genres = t.split(':')[1].split(',').map(x => x.trim()).filter(Boolean);
+      else if (low.startsWith('status') && t.includes(':')) status = t.split(':')[1].trim();
+      else if (low.startsWith('rating') && t.includes(':')) score = t.split(':')[1].trim();
+    });
+    out.push({
+      title: mtxt(a), url: absOtt(a.getAttribute('href')), thumb: img ? img.getAttribute('src') : null,
+      srcset: img ? img.getAttribute('srcset') : null, status, score, genres, aspect: '225/319'
+    });
+  });
+  return out;
+});
+
+const api = async (u, o) => {
+  const url = new URL(u, location.origin), p = url.pathname;
+  if (!['/api/detail', '/api/stream', '/api/thumb', '/api/genre', '/api/search'].includes(p)) return apiNet(u, o);
+  let j = null, err = null;
+  try { j = await apiNet(u, o); } catch (e) { err = e; }
+  const kosong = p === '/api/detail' ? !(j && j.anime)
+    : p === '/api/stream' ? !(j && (j.embed || j.url))
+    : p === '/api/search' ? !(j && (j.results || []).length)
+    : p === '/api/genre' ? !(j && (j.items || []).length)
+    : !(j && j.thumb);
+  if (!kosong) return j;
+  try {
+    if (p === '/api/detail') {
+      const d = await miruDetail(url.searchParams.get('url') || '');
+      if (!d.anime) throw new Error('not found');
+      return d;
+    }
+    if (p === '/api/thumb') return await miruThumb(url.searchParams.get('url') || '');
+    if (p === '/api/stream') return await miruStream(
+      url.searchParams.get('ep') || '',
+      url.searchParams.get('q') || '360p',
+      url.searchParams.has('i') ? +url.searchParams.get('i') : null);
+    if (p === '/api/genre') return { slug: url.searchParams.get('slug') || '', items: await miruGenre(url.searchParams.get('slug') || '', +(url.searchParams.get('page') || 1)) };
+    if (p === '/api/search') { const r = await miruSearch(url.searchParams.get('q') || ''); return { results: r, source: 'live', total: r.length }; }
+  } catch (e) {
+    if (err) throw err;
+    if (!j) throw e;
+  }
+  return j;
+};
 /* Netlify: simpan favorit/progress/continue di browser (tanpa server DB) */
 const LS_KEY = 'animehub_local_v1';
 const localRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || '{}') || {}; } catch (e) { return {}; } };

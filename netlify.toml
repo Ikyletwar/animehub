@@ -9,6 +9,18 @@
   remote_images = ["https://uploads\\.mangadex\\.org/.*", "https://[a-z0-9-]+\\.mangadex\\.network/.*", "https://[a-z0-9-]+\\.nhentai\\.net/.*"]
 
 [[redirects]]
+  from = "/dst/*"
+  to = "https://desustream.net/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/ott/*"
+  to = "https://otakudesu.blog/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
   status = 200
