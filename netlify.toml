@@ -5,6 +5,9 @@
 [functions]
   node_bundler = "esbuild"
 
+[images]
+  remote_images = ["https://uploads\\.mangadex\\.org/.*", "https://[a-z0-9-]+\\.mangadex\\.network/.*", "https://[a-z0-9-]+\\.nhentai\\.net/.*"]
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"

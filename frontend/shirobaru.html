@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
 <meta name="theme-color" content="#0B0B0E">
 <meta name="description" content="SHIRO — katalog manga biasa: chapter lengkap, reader vertikal & per halaman.">
 <title>SHIRO — Baca Manga</title>
@@ -532,14 +533,44 @@ const fmtN=n=>{n=+n||0;return n>=1e6?(n/1e6).toFixed(n>=1e7?0:1).replace('.0',''
   :n>=1000?(n/1000).toFixed(n>=10000?0:1).replace('.0','')+' rb':String(n)};
 const fmtAgo=m=>{m=+m||0;return m<1?'baru':m<60?m+'m':m<1440?Math.floor(m/60)+'j'
   :m<43200?Math.floor(m/1440)+'h':Math.floor(m/43200)+'bl'};
-const cover=m=>(m&&m.thumb)?m.thumb:PH;
+const b64d=s=>{s=String(s||'').replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';try{return atob(s)}catch(e){return ''}};
+const b64e=s=>btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+/* sumber asli untuk host yang diproteksi bot / diblokir ISP */
+const proxImg=(u,w)=>{
+  try{
+    const h=new URL(u,location.href).hostname;
+    if(h==='uploads.mangadex.org'||/\.mangadex\.network$/.test(h)||/\.nhentai\.net$/.test(h))
+      return '/.netlify/images?url='+encodeURIComponent(u)+(w?('&w='+w):'')+'&v=3';
+  }catch(e){}
+  return u;
+};
+/* URL relay /api/... diubah ke sumber asli + proxy Netlify Image CDN */
+const directImg=(src,w)=>{
+  try{
+    if(!src) return src;
+    let direct=null;
+    if(src.indexOf('/api/manga/img')===0){
+      const u=new URL(src,location.href).searchParams.get('u');
+      const d=b64d(u); if(/^https?:\/\//.test(d)) direct=d;
+    } else if(src.indexOf('/api/shiro/cover/')===0){
+      const p=src.replace(/^\/api\/shiro\/cover\//,'').split('?')[0].split('/');
+      if(p[0]&&p[1]) direct='https://uploads.mangadex.org/covers/'+p[0]+'/'+p[1];
+    } else if(/^https?:\/\//.test(src)&&src.indexOf('/.netlify/images')<0){
+      direct=src;
+    }
+    if(direct) return proxImg(direct,w);
+  }catch(e){}
+  return src;
+};
+const cover=m=>(m&&m.thumb)?directImg(m.thumb,512):PH;
 const slug=s=>String(s||'').toLowerCase().replace(/\s+/g,'-');
 const fallbackImg=(src)=>{
   try{
     const u=new URL(src, location.href);
-    if(/(^|\.)nhentai\.net$/.test(u.hostname)) {
-      return '/api/manga/img?u='+btoa(u.href).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    if(u.pathname==='/.netlify/images'){
+      const raw=u.searchParams.get('url'); if(raw) return raw;
     }
+    if(/(^|\.)nhentai\.net$/.test(u.hostname)) return '/api/manga/img?u='+b64e(u.href);
     if(u.hostname==='uploads.mangadex.org') {
       const m=u.pathname.match(/^\/covers\/([^/]+)\/([^/]+)$/);
       if(m) return '/api/shiro/cover/'+m[1]+'/'+m[2];
@@ -547,15 +578,28 @@ const fallbackImg=(src)=>{
   }catch(e){}
   return PH;
 };
+/* rantai fallback: sumber asli -> proxy wsrv.nl -> relay /api -> placeholder */
+const fbChain=(src)=>{
+  const out=[];
+  const relay=fallbackImg(src);
+  if(relay&&relay!==PH&&relay!==src) out.push(relay);
+  out.push(PH);
+  return out;
+};
 addEventListener('error',e=>{const t=e.target;
-  if(t&&t.tagName==='IMG'){
-    if(!t.dataset.fb1){
-      t.dataset.fb1='1';
-      const f=fallbackImg(t.src);
-      if(f&&f!==t.src){ t.src=f; return; }
-    }
-    if(!t.dataset.fb2){ t.dataset.fb2='1'; t.src=PH; }
-  }}, true);
+  if(!t||t.tagName!=='IMG') return;
+  if(!t.dataset.fbChain){
+    t.dataset.fbChain=JSON.stringify(fbChain(t.dataset.orig||t.src));
+    t.dataset.orig=t.dataset.orig||t.src;
+    t.dataset.fbIdx='0';
+  }
+  let chain=[]; try{chain=JSON.parse(t.dataset.fbChain)}catch(err){}
+  let i=+(t.dataset.fbIdx||0)+1;
+  if(i>=chain.length) return;
+  t.dataset.fbIdx=String(i);
+  const nx=chain[i];
+  if(nx&&nx!==t.src) t.src=nx;
+}, true);
 
 /* ---------------------------------------------------------- generator sampul & halaman (SVG, tanpa jaringan) */
 const xml=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
@@ -1116,7 +1160,7 @@ async function openReader(id,ch=1,page=1){
     if(r.open&&r.id===id){r.pages=0;r.error='Gagal memuat halaman';buildReader();toast('Gagal memuat halaman','info')}
   }
 }
-const pageUrl=k=>state.reader.arr[k-1]||PH;
+const pageUrl=k=>directImg(state.reader.arr[k-1]||PH,0);
 function buildReader(){
   const r=state.reader,m=r.item;
   const title=m?(m.title+' · Ch '+r.ch):'Memuat…';
