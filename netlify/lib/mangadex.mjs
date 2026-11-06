@@ -77,7 +77,7 @@ const coverUrl = (it) => {
   const mid = it.id;
   for (const r of rel(it, 'cover_art')) {
     const fn = r?.attributes?.fileName;
-    if (fn && validCoverName(fn)) return `/api/shiro/cover/${mid}/${fn}.512.jpg`;
+    if (fn && validCoverName(fn)) return `${UPLOADS}/covers/${mid}/${fn}.512.jpg`;
   }
   return null;
 };

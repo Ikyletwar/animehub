@@ -531,8 +531,28 @@ const fmtAgo=m=>{m=+m||0;return m<1?'baru':m<60?m+'m':m<1440?Math.floor(m/60)+'j
   :m<43200?Math.floor(m/1440)+'h':Math.floor(m/43200)+'bl'};
 const cover=m=>(m&&m.thumb)?m.thumb:PH;
 /* fallback global untuk gambar yang gagal dimuat */
+const fallbackImg=(src)=>{
+  try{
+    const u=new URL(src, location.href);
+    if(/(^|\.)nhentai\.net$/.test(u.hostname)) {
+      return '/api/manga/img?u='+btoa(u.href).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    }
+    if(u.hostname==='uploads.mangadex.org') {
+      const m=u.pathname.match(/^\/covers\/([^/]+)\/([^/]+)$/);
+      if(m) return '/api/shiro/cover/'+m[1]+'/'+m[2];
+    }
+  }catch(e){}
+  return PH;
+};
 addEventListener('error',e=>{const t=e.target;
-  if(t&&t.tagName==='IMG'&&!t.dataset.fb){t.dataset.fb='1';t.src=PH}},true);
+  if(t&&t.tagName==='IMG'){
+    if(!t.dataset.fb1){
+      t.dataset.fb1='1';
+      const f=fallbackImg(t.src);
+      if(f&&f!==t.src){ t.src=f; return; }
+    }
+    if(!t.dataset.fb2){ t.dataset.fb2='1'; t.src=PH; }
+  }}, true);
 
 /* ---------------------------------------------------------- lapisan API */
 async function api(path,params){

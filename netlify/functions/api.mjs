@@ -86,7 +86,11 @@ const route = async (req) => {
     const parts = path.split('/');
     const got = await S.fetchCover(parts[2], parts[3]);
     if (!got) return text('Not Found', 404);
-    return new Response(got.buffer, { status: 200, headers: { 'content-type': got.contentType, 'cache-control': 'public, max-age=604800' } });
+    return new Response(got.buffer, { status: 200, headers: {
+      'content-type': got.contentType,
+      'cache-control': 'public, max-age=604800',
+      'netlify-cdn-cache-control': 'public, max-age=604800, stale-while-revalidate=86400',
+    } });
   }
 
   // YOMU / nhentai (18+)
@@ -127,7 +131,11 @@ const route = async (req) => {
     if (!src || !N.validImgUrl(src)) return xml(placeholderSvg('NO IMAGE'));
     try {
       const r = await fetchBytes(src, { headers: { Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8' }, maxBytes: 14 * 1024 * 1024 });
-      return new Response(r.buffer, { status: 200, headers: { 'content-type': (r.contentType || 'image/webp').split(';')[0], 'cache-control': 'public, max-age=86400' } });
+      return new Response(r.buffer, { status: 200, headers: {
+        'content-type': (r.contentType || 'image/webp').split(';')[0],
+        'cache-control': 'public, max-age=86400',
+        'netlify-cdn-cache-control': 'public, max-age=86400, stale-while-revalidate=86400',
+      } });
     } catch {
       return xml(placeholderSvg('NO IMAGE'));
     }
@@ -155,9 +163,9 @@ export default run;
 
 const lambdaToRequest = (event) => {
   const rawPath = event?.rawPath || event?.path || '/';
-  const rawQuery = event?.rawQueryString ?? (event?.queryStringParameters ? new URLSearchParams(event.queryStringParameters).toString() : '');
+  const rawQuery = event?.rawQueryString ?? event?.rawQuery ?? (event?.queryStringParameters ? new URLSearchParams(event.queryStringParameters).toString() : '');
   const method = event?.httpMethod || event?.requestContext?.http?.method || 'GET';
-  const url = 'https://elegant-sable-dd27bc.netlify.app' + rawPath + (rawQuery ? '?' + rawQuery : '');
+  const url = event?.rawUrl || ('https://elegant-sable-dd27bc.netlify.app' + rawPath + (rawQuery ? '?' + rawQuery : ''));
   const headers = new Headers();
   for (const [k, v] of Object.entries(event?.headers || {})) headers.set(k, String(v));
   let body = event?.body;
@@ -168,12 +176,14 @@ const lambdaToRequest = (event) => {
 export const handler = async (event) => {
   const res = await run(lambdaToRequest(event));
   const headers = Object.fromEntries(res.headers.entries());
-  return {
-    statusCode: res.status,
-    headers,
-    body: await res.text(),
-    isBase64Encoded: false,
-  };
+  // Body biner (gambar) harus dikirim sebagai base64; res.text() merusak byte gambar.
+  const raw = Buffer.from(await res.arrayBuffer());
+  const type = headers['content-type'] || '';
+  const isText = /^(text\/|application\/(json|javascript|xml|xhtml\+xml)|image\/svg\+xml)/i.test(type);
+  if (isText) {
+    return { statusCode: res.status, headers, body: raw.toString('utf8'), isBase64Encoded: false };
+  }
+  return { statusCode: res.status, headers, body: raw.toString('base64'), isBase64Encoded: true };
 };
 
 export const config = { path: '/api/*' };

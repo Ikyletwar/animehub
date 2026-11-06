@@ -115,7 +115,7 @@ export const itemFromList = async (it) => {
     genres,
     desc: '',
     date: null,
-    thumb: thumbUrl ? relay(thumbUrl) : null,
+    thumb: thumbUrl,
   };
 };
 
@@ -151,7 +151,7 @@ export const itemFromGallery = async (j) => {
     genres,
     desc: descParts.join(' · '),
     date: Number(j.upload_date || 0) || null,
-    thumb: cover ? relay(cover) : null,
+    thumb: cover,
     scanlator: j.scanlator || '',
   };
 };
@@ -212,19 +212,17 @@ export const pages = async (url, { fresh = false } = {}) => {
     const num = p.number || (images.length + 1);
     const imagePath = (p.path && String(p.path).startsWith('galleries/')) ? String(p.path) : null;
     if (imagePath) {
-      images.push(`${relay(`${image}/${imagePath}`)}&n=${num}`);
+      images.push(`${image}/${imagePath}`);
       continue;
     }
     const ext = p.extension || 'webp';
-    images.push(`${relay(`${image}/galleries/${mediaId}/${num}.${ext}`)}&n=${num}`);
+    images.push(`${image}/galleries/${mediaId}/${num}.${ext}`);
   }
-  // src_ok probe: relay gambar pertama
+  // src_ok probe: cek gambar pertama dari sisi server
   let src_ok = true;
   if (images.length) {
     try {
-      const raw = images[0].split('u=')[1].split('&')[0];
-      const src = unrelay(raw);
-      const r = await fetchBytes(src, { headers: { Range: 'bytes=0-0' }, maxBytes: 1024 * 1024 });
+      const r = await fetchBytes(images[0], { headers: { Range: 'bytes=0-0' }, maxBytes: 1024 * 1024 });
       src_ok = !!r.buffer.length;
     } catch {
       src_ok = false;
